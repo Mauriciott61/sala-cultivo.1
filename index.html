@@ -1,150 +1,91 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sala de Cultivo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #4CAF50;
-      text-align: center;
-    }
-
-    #data {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .sensor-data {
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-
-    .sensor-label {
-      font-weight: bold;
-    }
-
-    .button-container {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .control-button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      margin: 10px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .control-button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Sala de Cultivo</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #222222;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            font-size: 36px;
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        .quadrant {
+            border: 2px solid #444;
+            padding: 20px;
+            margin: 15px;
+            width: 45%;
+            min-width: 280px;
+            background-color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px;
+            margin: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .status {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Datos de la Sala de Cultivo</h1>
-  
-  <!-- Muestra los datos de sensores -->
-  <div id="data"></div>
-  
-  <!-- Botones para controlar dispositivos -->
-  <div class="button-container">
-    <button id="control-lights" class="control-button">Controlar Luces</button>
-    <button id="control-humidifier" class="control-button">Controlar Humidificador</button>
-    <button id="control-irrigation" class="control-button">Controlar Bomba de Riego</button>
-    <button id="control-extractor" class="control-button">Controlar Extractor</button>
-  </div>
+    <h1>Control de Sala de Cultivo</h1>
 
-  <!-- Firebase SDK v8 -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-  <script>
-    // Configuración de Firebase
-    var firebaseConfig = {
-      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-      authDomain: "sala-cultivo.firebaseapp.com",
-      databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-      projectId: "sala-cultivo",
-      storageBucket: "sala-cultivo.firebasestorage.app",
-      messagingSenderId: "388469961230",
-      appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-      measurementId: "G-72JQD67R0X"
-    };
-
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    var database = firebase.database();
-    var dbRef = database.ref('/');
-
-    // Leer datos de Firebase
-    dbRef.on('value', function(snapshot) {
-      var data = snapshot.val();
-      var html = `
-        <div id="sensor-data">
-          <div class="sensor-data"><span class="sensor-label">Temperatura:</span> ${data.sensores.temperatura} °C</div>
-          <div class="sensor-data"><span class="sensor-label">Humedad:</span> ${data.sensores.humedad} %</div>
-          <div class="sensor-data"><span class="sensor-label">Humedad Ambiente:</span> ${data.sensores.humedad_ambiente} %</div>
-          <div class="sensor-data"><span class="sensor-label">Humedad Suelo:</span> ${data.sensores.humedad_suelo} %</div>
-          <div class="sensor-data"><span class="sensor-label">Déficit de Presión de Vapor:</span> ${data.sensores.deficit_presion_vapor} kPa</div>
+    <div class="container">
+        <div class="quadrant">
+            <h2>Luces</h2>
+            <button id="btn-lights-on">Encender Luces</button>
+            <button id="btn-lights-off">Apagar Luces</button>
+            <div id="lights-status" class="status">Estado: Desconocido</div>
         </div>
-      `;
-      document.getElementById('data').innerHTML = html;
-    });
 
-    // Función para actualizar el estado de un dispositivo en Firebase
-    function updateDeviceStatus(device, status) {
-      var deviceRef = database.ref('/controles/' + device);
-      deviceRef.set(status);
-    }
+        <div class="quadrant">
+            <h2>Humidificador</h2>
+            <button id="btn-humidifier-on">Encender Humidificador</button>
+            <button id="btn-humidifier-off">Apagar Humidificador</button>
+            <div id="humidifier-status" class="status">Estado: Desconocido</div>
+        </div>
 
-    // Controlar Luces
-    document.getElementById('control-lights').addEventListener('click', function() {
-      var currentStatus = this.innerText.includes('Encendido');
-      var newStatus = !currentStatus;
-      this.innerText = newStatus ? 'Apagar Luces' : 'Encender Luces';
-      updateDeviceStatus('luces', newStatus);
-    });
+        <div class="quadrant">
+            <h2>Extractor</h2>
+            <button id="btn-extractor-on">Encender Extractor</button>
+            <button id="btn-extractor-off">Apagar Extractor</button>
+            <div id="extractor-status" class="status">Estado: Desconocido</div>
+        </div>
 
-    // Controlar Humidificador
-    document.getElementById('control-humidifier').addEventListener('click', function() {
-      var currentStatus = this.innerText.includes('Encendido');
-      var newStatus = !currentStatus;
-      this.innerText = newStatus ? 'Apagar Humidificador' : 'Encender Humidificador';
-      updateDeviceStatus('humidificador', newStatus);
-    });
+        <div class="quadrant">
+            <h2>Riego</h2>
+            <button id="btn-irrigation-on">Encender Riego</button>
+            <button id="btn-irrigation-off">Apagar Riego</button>
+            <div id="irrigation-status" class="status">Estado: Desconocido</div>
+        </div>
+    </div>
 
-    // Controlar Bomba de Riego
-    document.getElementById('control-irrigation').addEventListener('click', function() {
-      var currentStatus = this.innerText.includes('Encendido');
-      var newStatus = !currentStatus;
-      this.innerText = newStatus ? 'Apagar Bomba de Riego' : 'Encender Bomba de Riego';
-      updateDeviceStatus('bomba_riego', newStatus);
-    });
-
-    // Controlar Extractor
-    document.getElementById('control-extractor').addEventListener('click', function() {
-      var currentStatus = this.innerText.includes('Encendido');
-      var newStatus = !currentStatus;
-      this.innerText = newStatus ? 'Apagar Extractor' : 'Encender Extractor';
-      updateDeviceStatus('extractor', newStatus);
-    });
-  </script>
+    <script src="firebase.js"></script>
 </body>
 </html>
