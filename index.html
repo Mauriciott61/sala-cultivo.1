@@ -4,12 +4,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sala de Cultivo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #4CAF50;
+      text-align: center;
+    }
+
+    #data {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .sensor-data {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .sensor-label {
+      font-weight: bold;
+    }
+
+    .button-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .control-button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .control-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
   <h1>Datos de la Sala de Cultivo</h1>
+  
+  <!-- Muestra los datos de sensores -->
   <div id="data"></div>
+  
+  <!-- Botones para controlar dispositivos -->
+  <div class="button-container">
+    <button id="control-lights" class="control-button">Controlar Luces</button>
+    <button id="control-humidifier" class="control-button">Controlar Humidificador</button>
+    <button id="control-irrigation" class="control-button">Controlar Bomba de Riego</button>
+    <button id="control-extractor" class="control-button">Controlar Extractor</button>
+  </div>
 
-  <!-- Firebase SDK v8 (no usa módulos ES) -->
+  <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -28,31 +90,60 @@
 
     // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
-    console.log('Firebase inicializado');
+    var database = firebase.database();
+    var dbRef = database.ref('/');
 
     // Leer datos de Firebase
-    var database = firebase.database();
-    var sensoresRef = database.ref('/sensores/');
-
-    sensoresRef.on('value', function(snapshot) {
+    dbRef.on('value', function(snapshot) {
       var data = snapshot.val();
-      console.log('Datos de sensores:', data);  // Verifica los datos en la consola
+      var html = `
+        <div id="sensor-data">
+          <div class="sensor-data"><span class="sensor-label">Temperatura:</span> ${data.sensores.temperatura} °C</div>
+          <div class="sensor-data"><span class="sensor-label">Humedad:</span> ${data.sensores.humedad} %</div>
+          <div class="sensor-data"><span class="sensor-label">Humedad Ambiente:</span> ${data.sensores.humedad_ambiente} %</div>
+          <div class="sensor-data"><span class="sensor-label">Humedad Suelo:</span> ${data.sensores.humedad_suelo} %</div>
+          <div class="sensor-data"><span class="sensor-label">Déficit de Presión de Vapor:</span> ${data.sensores.deficit_presion_vapor} kPa</div>
+        </div>
+      `;
+      document.getElementById('data').innerHTML = html;
+    });
 
-      if (data) {
-        var dataHtml = `
-          <h2>Datos de Sensores</h2>
-          <ul>
-            <li>Temperatura: ${data.temperatura} °C</li>
-            <li>Humedad: ${data.humedad} %</li>
-            <li>Humedad Ambiente: ${data.humedad_ambiente} %</li>
-            <li>Humedad Suelo: ${data.humedad_suelo} %</li>
-            <li>Déficit de Presión de Vapor: ${data.deficit_presion_vapor} kPa</li>
-          </ul>
-        `;
-        document.getElementById('data').innerHTML = dataHtml;
-      } else {
-        document.getElementById('data').innerHTML = 'No se encontraron datos.';
-      }
+    // Función para actualizar el estado de un dispositivo en Firebase
+    function updateDeviceStatus(device, status) {
+      var deviceRef = database.ref('/controles/' + device);
+      deviceRef.set(status);
+    }
+
+    // Controlar Luces
+    document.getElementById('control-lights').addEventListener('click', function() {
+      var currentStatus = this.innerText.includes('Encendido');
+      var newStatus = !currentStatus;
+      this.innerText = newStatus ? 'Apagar Luces' : 'Encender Luces';
+      updateDeviceStatus('luces', newStatus);
+    });
+
+    // Controlar Humidificador
+    document.getElementById('control-humidifier').addEventListener('click', function() {
+      var currentStatus = this.innerText.includes('Encendido');
+      var newStatus = !currentStatus;
+      this.innerText = newStatus ? 'Apagar Humidificador' : 'Encender Humidificador';
+      updateDeviceStatus('humidificador', newStatus);
+    });
+
+    // Controlar Bomba de Riego
+    document.getElementById('control-irrigation').addEventListener('click', function() {
+      var currentStatus = this.innerText.includes('Encendido');
+      var newStatus = !currentStatus;
+      this.innerText = newStatus ? 'Apagar Bomba de Riego' : 'Encender Bomba de Riego';
+      updateDeviceStatus('bomba_riego', newStatus);
+    });
+
+    // Controlar Extractor
+    document.getElementById('control-extractor').addEventListener('click', function() {
+      var currentStatus = this.innerText.includes('Encendido');
+      var newStatus = !currentStatus;
+      this.innerText = newStatus ? 'Apagar Extractor' : 'Encender Extractor';
+      updateDeviceStatus('extractor', newStatus);
     });
   </script>
 </body>
