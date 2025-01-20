@@ -15,16 +15,17 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
   <script>
-       // Configuración de Firebase
-     apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-  authDomain: "sala-cultivo.firebaseapp.com",
-  databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-  projectId: "sala-cultivo",
-  storageBucket: "sala-cultivo.firebasestorage.app",
-  messagingSenderId: "388469961230",
-  appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-  measurementId: "G-72JQD67R0X"
-};
+    // Configuración de Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+      authDomain: "sala-cultivo.firebaseapp.com",
+      databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+      projectId: "sala-cultivo",
+      storageBucket: "sala-cultivo.firebasestorage.app",
+      messagingSenderId: "388469961230",
+      appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+      measurementId: "G-72JQD67R0X"
+    };
 
     // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
