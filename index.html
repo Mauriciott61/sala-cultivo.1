@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala de Cultivo</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Para gráficos -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Sala de Cultivo</h1>
+  </header>
+  <main>
+    <section id="dashboard">
+      <h2>Datos en Tiempo Real</h2>
+      <p><strong>Temperatura:</strong> <span id="temp">Cargando...</span> °C</p>
+      <p><strong>Humedad Ambiente:</strong> <span id="hum">Cargando...</span> %</p>
+      <p><strong>Humedad del Suelo:</strong> <span id="hum_suelo">Cargando...</span> %</p>
+      <p><strong>Déficit de Presión de Vapor:</strong> <span id="dpv">Cargando...</span> hPa</p>
+    </section>
+
+    <section id="grafico">
+      <h2>Gráficos de Sensores</h2>
+      <canvas id="tempChart"></canvas>
+      <canvas id="humChart"></canvas>
+      <canvas id="humSueloChart"></canvas>
+      <canvas id="dpvChart"></canvas>
+    </section>
+
+    <section id="controles">
+      <h2>Controles</h2>
+      <button id="ventilador-btn">Encender Ventilador</button>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
