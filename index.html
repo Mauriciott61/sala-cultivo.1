@@ -1,134 +1,89 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Cultivo</title>
-    <!-- Agregar CSS para el estilo -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
-        }
-        .controls {
-            margin-top: 20px;
-        }
-        .slider {
-            width: 200px;
-        }
-        .indicator {
-            display: inline-block;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
-            line-height: 150px;
-            font-size: 24px;
-            margin: 10px;
-        }
-        .indicator span {
-            font-weight: bold;
-        }
-        .green { background-color: #5cb85c; }
-        .blue { background-color: #0275d8; }
-        .orange { background-color: #f0ad4e; }
-    </style>
-
-    <!-- Importar Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control y Monitoreo</title>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    .sensor {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+    .control {
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+    }
+  </style>
 </head>
 <body>
-    <h1>Sala de Cultivo</h1>
+  <h1>Control y Monitoreo desde Firebase</h1>
+  
+  <div id="sensores">
+    <h2>Datos de Sensores</h2>
+    <div class="sensor">Temperatura: <span id="temperatura">-</span> °C</div>
+    <div class="sensor">Humedad: <span id="humedad">-</span> %</div>
+  </div>
 
-    <!-- Cuadrantes de visualización -->
-    <div class="indicators">
-        <div id="temperature-indicator" class="indicator green">
-            <span id="temperature">Cargando...</span> °C
-        </div>
-        <div id="humidity-indicator" class="indicator blue">
-            <span id="humidity">Cargando...</span> %
-        </div>
-        <div id="soil-moisture-indicator" class="indicator orange">
-            <span id="soilMoisture">Cargando...</span> %
-        </div>
+  <div id="controles">
+    <h2>Control de Ventilador</h2>
+    <div class="control">
+      <button onclick="controlVentilador(true)">Encender</button>
+      <button onclick="controlVentilador(false)">Apagar</button>
     </div>
+    <div class="status">Estado: <span id="ventiladorEstado">-</span></div>
+  </div>
 
-    <!-- Controles interactivos -->
-    <div class="controls">
-        <h3>Controlar Variables</h3>
-        <label for="temperature-slider">Temperatura (°C): </label>
-        <input type="range" id="temperature-slider" class="slider" min="10" max="40" step="0.5" value="25">
-        <span id="temperature-value">25</span> °C <br>
+  <script>
+    // Configuración de Firebase
+     apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+  authDomain: "sala-cultivo.firebaseapp.com",
+  databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+  projectId: "sala-cultivo",
+  storageBucket: "sala-cultivo.firebasestorage.app",
+  messagingSenderId: "388469961230",
+  appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+  measurementId: "G-72JQD67R0X"
+};
 
-        <label for="humidity-slider">Humedad (%): </label>
-        <input type="range" id="humidity-slider" class="slider" min="30" max="90" step="1" value="60">
-        <span id="humidity-value">60</span> % <br>
+    // Inicializar Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        <label for="soil-moisture-slider">Humedad del Suelo (%): </label>
-        <input type="range" id="soil-moisture-slider" class="slider" min="0" max="100" step="1" value="75">
-        <span id="soil-moisture-value">75</span> % <br>
-    </div>
+    // Referencias a los datos en Firebase
+    const tempRef = firebase.database().ref("/sensores/temperatura");
+    const humRef = firebase.database().ref("/sensores/humedad");
+    const fanRef = firebase.database().ref("/controles/ventilador");
 
-    <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_AUTH_DOMAIN",
-            databaseURL: "TU_DATABASE_URL",
-            projectId: "TU_PROJECT_ID",
-            storageBucket: "TU_STORAGE_BUCKET",
-            messagingSenderId: "TU_MESSAGING_SENDER_ID",
-            appId: "TU_APP_ID"
-        };
+    // Actualizar valores de sensores en la página
+    tempRef.on("value", (snapshot) => {
+      document.getElementById("temperatura").innerText = snapshot.val();
+    });
 
-        // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+    humRef.on("value", (snapshot) => {
+      document.getElementById("humedad").innerText = snapshot.val();
+    });
 
-        // Referencias a los valores en la base de datos
-        const temperatureRef = database.ref('temperature');
-        const humidityRef = database.ref('humidity');
-        const soilMoistureRef = database.ref('soilMoisture');
+    // Actualizar estado del ventilador en la página
+    fanRef.on("value", (snapshot) => {
+      document.getElementById("ventiladorEstado").innerText = snapshot.val() ? "Encendido" : "Apagado";
+    });
 
-        // Actualizar la página con los datos en tiempo real
-        temperatureRef.on('value', function(snapshot) {
-            document.getElementById('temperature').textContent = snapshot.val();
-            document.getElementById('temperature-slider').value = snapshot.val();
-            document.getElementById('temperature-value').textContent = snapshot.val();
-        });
-
-        humidityRef.on('value', function(snapshot) {
-            document.getElementById('humidity').textContent = snapshot.val();
-            document.getElementById('humidity-slider').value = snapshot.val();
-            document.getElementById('humidity-value').textContent = snapshot.val();
-        });
-
-        soilMoistureRef.on('value', function(snapshot) {
-            document.getElementById('soilMoisture').textContent = snapshot.val();
-            document.getElementById('soil-moisture-slider').value = snapshot.val();
-            document.getElementById('soil-moisture-value').textContent = snapshot.val();
-        });
-
-        // Controladores para actualizar Firebase cuando cambian los valores de los sliders
-        document.getElementById('temperature-slider').addEventListener('input', function() {
-            const temperature = this.value;
-            temperatureRef.set(temperature); // Enviar nuevo valor a Firebase
-            document.getElementById('temperature-value').textContent = temperature;
-        });
-
-        document.getElementById('humidity-slider').addEventListener('input', function() {
-            const humidity = this.value;
-            humidityRef.set(humidity); // Enviar nuevo valor a Firebase
-            document.getElementById('humidity-value').textContent = humidity;
-        });
-
-        document.getElementById('soil-moisture-slider').addEventListener('input', function() {
-            const soilMoisture = this.value;
-            soilMoistureRef.set(soilMoisture); // Enviar nuevo valor a Firebase
-            document.getElementById('soil-moisture-value').textContent = soilMoisture;
-        });
-    </script>
+    // Controlar el ventilador desde la página
+    function controlVentilador(encender) {
+      fanRef.set(encender)
+        .then(() => console.log(`Ventilador ${encender ? "encendido" : "apagado"}`))
+        .catch((error) => console.error("Error al controlar el ventilador:", error));
+    }
+  </script>
 </body>
 </html>
