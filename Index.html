@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo y Control de Sala de Cultivo</title>
+    <style>
+        /* Estilos anteriores aquí... */
+    </style>
+</head>
+<body>
+    <h1>Monitoreo y Control de Sala de Cultivo</h1>
+    <div class="container">
+        <div class="sensor-data">
+            <h2>Datos de Sensores</h2>
+            <p>Temperatura: <span id="temperatura">Cargando...</span> °C</p>
+            <p>Humedad ambiente: <span id="humedad_ambiente">Cargando...</span> %</p>
+            <p>Humedad del suelo: <span id="humedad_suelo">Cargando...</span> %</p>
+            <p>Déficit de presión de vapor: <span id="deficit_presion_vapor">Cargando...</span></p>
+        </div>
+        
+        <div class="control-data">
+            <h2>Controles de Dispositivos</h2>
+            <div class="control-btns">
+                <button id="bomba_riego_btn">Bomba de riego</button>
+                <button id="extractor_btn">Extractor</button>
+                <button id="humidificador_btn">Humidificador</button>
+                <button id="luces_btn">Luces</button>
+                <button id="ventilador_btn">Ventilador</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="firebaseConfig.js"></script>
+    <script type="module" src="sensorData.js"></script>
+    <script type="module" src="controlData.js"></script>
+</body>
+</html>
+
