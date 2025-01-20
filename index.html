@@ -3,45 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control y Monitoreo</title>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 20px;
-    }
-    .sensor {
-      margin: 10px 0;
-      font-size: 1.2em;
-    }
-    .control {
-      margin: 20px 0;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1em;
-    }
-  </style>
+  <title>Sala de Cultivo</title>
 </head>
 <body>
-  <h1>Control y Monitoreo desde Firebase</h1>
-  
-  <div id="sensores">
-    <h2>Datos de Sensores</h2>
-    <div class="sensor">Temperatura: <span id="temperatura">-</span> °C</div>
-    <div class="sensor">Humedad: <span id="humedad">-</span> %</div>
-  </div>
+  <h1>Datos de la Sala de Cultivo</h1>
+  <div id="data"></div>
 
-  <div id="controles">
-    <h2>Control de Ventilador</h2>
-    <div class="control">
-      <button onclick="controlVentilador(true)">Encender</button>
-      <button onclick="controlVentilador(false)">Apagar</button>
-    </div>
-    <div class="status">Estado: <span id="ventiladorEstado">-</span></div>
-  </div>
+  <!-- Incluye Firebase desde el CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
 
   <script>
     // Configuración de Firebase
@@ -57,33 +27,16 @@
 
     // Inicializar Firebase
     const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const database = firebase.database();
 
-    // Referencias a los datos en Firebase
-    const tempRef = firebase.database().ref("/sensores/temperatura");
-    const humRef = firebase.database().ref("/sensores/humedad");
-    const fanRef = firebase.database().ref("/controles/ventilador");
-
-    // Actualizar valores de sensores en la página
-    tempRef.on("value", (snapshot) => {
-      document.getElementById("temperatura").innerText = snapshot.val();
+    // Leer datos de Firebase
+    const dbRef = database.ref('/ruta_a_tus_datos/');
+    dbRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      document.getElementById('data').innerText = JSON.stringify(data, null, 2);
     });
-
-    humRef.on("value", (snapshot) => {
-      document.getElementById("humedad").innerText = snapshot.val();
-    });
-
-    // Actualizar estado del ventilador en la página
-    fanRef.on("value", (snapshot) => {
-      document.getElementById("ventiladorEstado").innerText = snapshot.val() ? "Encendido" : "Apagado";
-    });
-
-    // Controlar el ventilador desde la página
-    function controlVentilador(encender) {
-      fanRef.set(encender)
-        .then(() => console.log(`Ventilador ${encender ? "encendido" : "apagado"}`))
-        .catch((error) => console.error("Error al controlar el ventilador:", error));
-    }
   </script>
 </body>
 </html>
+
+    
