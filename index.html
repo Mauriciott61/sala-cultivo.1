@@ -1,112 +1,167 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monitoreo y Control de Sala de Cultivo</title>
-  <!-- Importar la librería de Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f8ff;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    .data-item {
-      margin: 10px 0;
-    }
-    .data-item span {
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo y Control de Sala de Cultivo</title>
+    <!-- Estilos CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: white;
+            margin: 0;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .sensor-data,
+        .control-data {
+            background-color: #fff;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sensor-data p,
+        .control-data p {
+            font-size: 18px;
+        }
+
+        .control-btns button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .control-btns button:disabled {
+            background-color: #ccc;
+        }
+    </style>
 </head>
 <body>
-  <h1>Monitoreo y Control de Sala de Cultivo</h1>
-  <div class="container">
-    <h2>Datos de Sensores</h2>
-    <div class="data-item">
-      <span>Temperatura:</span> <span id="temperatura">Cargando...</span> °C
+    <h1>Monitoreo y Control de Sala de Cultivo</h1>
+    <div class="container">
+        <div class="sensor-data">
+            <h2>Datos de Sensores</h2>
+            <p>Temperatura: <span id="temperatura">Cargando...</span> °C</p>
+            <p>Humedad ambiente: <span id="humedad_ambiente">Cargando...</span> %</p>
+            <p>Humedad del suelo: <span id="humedad_suelo">Cargando...</span> %</p>
+            <p>Déficit de presión de vapor: <span id="deficit_presion_vapor">Cargando...</span></p>
+        </div>
+        
+        <div class="control-data">
+            <h2>Controles de Dispositivos</h2>
+            <div class="control-btns">
+                <button id="bomba_riego_btn">Bomba de riego</button>
+                <button id="extractor_btn">Extractor</button>
+                <button id="humidificador_btn">Humidificador</button>
+                <button id="luces_btn">Luces</button>
+                <button id="ventilador_btn">Ventilador</button>
+            </div>
+        </div>
     </div>
-    <div class="data-item">
-      <span>Humedad ambiente:</span> <span id="humedad_ambiente">Cargando...</span> %
-    </div>
-    <div class="data-item">
-      <span>Humedad del suelo:</span> <span id="humedad_suelo">Cargando...</span> %
-    </div>
-    <div class="data-item">
-      <span>Déficit de presión de vapor:</span> <span id="deficit_presion_vapor">Cargando...</span>
-    </div>
-    <h2>Controles de Dispositivos</h2>
-    <div class="data-item">
-      <span>Bomba de riego:</span> <span id="bomba_riego">Cargando...</span>
-    </div>
-    <div class="data-item">
-      <span>Extractor:</span> <span id="extractor">Cargando...</span>
-    </div>
-    <div class="data-item">
-      <span>Humidificador:</span> <span id="humidificador">Cargando...</span>
-    </div>
-    <div class="data-item">
-      <span>Luces:</span> <span id="luces">Cargando...</span>
-    </div>
-    <div class="data-item">
-      <span>Ventilador:</span> <span id="ventilador">Cargando...</span>
-    </div>
-  </div>
 
-  <!-- Incluir tu script de Firebase y el código de JavaScript -->
-  <script>
-    // Tu configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-      authDomain: "sala-cultivo.firebaseapp.com",
-      databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-      projectId: "sala-cultivo",
-      storageBucket: "sala-cultivo.firebasestorage.app",
-      messagingSenderId: "388469961230",
-      appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-      measurementId: "G-72JQD67R0X"
-    };
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
 
-    // Inicializar Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database(app);
+    <script type="module">
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+            authDomain: "sala-cultivo.firebaseapp.com",
+            databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+            projectId: "sala-cultivo",
+            storageBucket: "sala-cultivo.firebasestorage.app",
+            messagingSenderId: "388469961230",
+            appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+            measurementId: "G-72JQD67R0X"
+        };
 
-    // Referencias a los nodos de la base de datos
-    const sensoresRef = database.ref('sensores');
-    const controlesRef = database.ref('controles');
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database(app);
 
-    // Leer datos de sensores
-    sensoresRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      document.getElementById('temperatura').innerText = data.temperatura || "N/A";
-      document.getElementById('humedad_ambiente').innerText = data.humedad_ambiente || "N/A";
-      document.getElementById('humedad_suelo').innerText = data.humedad_suelo || "N/A";
-      document.getElementById('deficit_presion_vapor').innerText = data.deficit_presion_vapor || "N/A";
-    });
+        // Referencias de la base de datos
+        const dbRef = database.ref();
 
-    // Leer datos de controles
-    controlesRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      document.getElementById('bomba_riego').innerText = data.bomba_riego ? "Encendido" : "Apagado";
-      document.getElementById('extractor').innerText = data.extractor ? "Encendido" : "Apagado";
-      document.getElementById('humidificador').innerText = data.humidificador ? "Encendido" : "Apagado";
-      document.getElementById('luces').innerText = data.luces ? "Encendido" : "Apagado";
-      document.getElementById('ventilador').innerText = data.ventilador ? "Encendido" : "Apagado";
-    });
-  </script>
+        // Función para obtener los datos de sensores y actualizar la interfaz
+        function getSensorData() {
+            dbRef.child('sensores').get().then(snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById("temperatura").textContent = data.temperatura;
+                    document.getElementById("humedad_ambiente").textContent = data.humedad_ambiente;
+                    document.getElementById("humedad_suelo").textContent = data.humedad_suelo;
+                    document.getElementById("deficit_presion_vapor").textContent = data.deficit_presion_vapor;
+                } else {
+                    console.log("No hay datos");
+                }
+            }).catch(error => {
+                console.error(error);
+            });
+        }
+
+        // Función para obtener los controles de dispositivos y actualizar los botones
+        function getControlData() {
+            dbRef.child('controles').get().then(snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById("bomba_riego_btn").disabled = !data.bomba_riego;
+                    document.getElementById("extractor_btn").disabled = !data.extractor;
+                    document.getElementById("humidificador_btn").disabled = !data.humidificador;
+                    document.getElementById("luces_btn").disabled = !data.luces;
+                    document.getElementById("ventilador_btn").disabled = !data.ventilador;
+                } else {
+                    console.log("No hay datos de controles");
+                }
+            }).catch(error => {
+                console.error(error);
+            });
+        }
+
+        // Funciones para cambiar el estado de los controles
+        function toggleControl(control) {
+            dbRef.child('controles').child(control).get().then(snapshot => {
+                const currentState = snapshot.val();
+                dbRef.child('controles').update({
+                    [control]: !currentState
+                });
+            });
+        }
+
+        // Event listeners para los botones
+        document.getElementById("bomba_riego_btn").addEventListener("click", () => toggleControl('bomba_riego'));
+        document.getElementById("extractor_btn").addEventListener("click", () => toggleControl('extractor'));
+        document.getElementById("humidificador_btn").addEventListener("click", () => toggleControl('humidificador'));
+        document.getElementById("luces_btn").addEventListener("click", () => toggleControl('luces'));
+        document.getElementById("ventilador_btn").addEventListener("click", () => toggleControl('ventilador'));
+
+        // Inicializar la página con datos
+        getSensorData();
+        getControlData();
+
+        // Actualizar los datos cada 5 segundos
+        setInterval(() => {
+            getSensorData();
+            getControlData();
+        }, 5000);
+    </script>
 </body>
 </html>
