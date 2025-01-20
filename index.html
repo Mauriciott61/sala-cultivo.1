@@ -1,40 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sala de Cultivo</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Para gráficos -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Cultivo</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: black; color: white; text-align: center; }
+        h1 { font-size: 36px; }
+        .container { display: flex; justify-content: center; flex-wrap: wrap; padding: 20px; }
+        .quadrant { border: 1px solid white; padding: 10px; margin: 10px; width: 45%; }
+        .button { background-color: #4CAF50; color: white; padding: 10px; margin: 5px; cursor: pointer; }
+        .button:hover { background-color: #45a049; }
+    </style>
 </head>
 <body>
-  <header>
     <h1>Sala de Cultivo</h1>
-  </header>
-  <main>
-    <section id="dashboard">
-      <h2>Datos en Tiempo Real</h2>
-      <p><strong>Temperatura:</strong> <span id="temp">Cargando...</span> °C</p>
-      <p><strong>Humedad Ambiente:</strong> <span id="hum">Cargando...</span> %</p>
-      <p><strong>Humedad del Suelo:</strong> <span id="hum_suelo">Cargando...</span> %</p>
-      <p><strong>Déficit de Presión de Vapor:</strong> <span id="dpv">Cargando...</span> hPa</p>
-    </section>
+    <div class="container">
+        <div class="quadrant">
+            <h2>Temperatura</h2>
+            <p id="temperature">Cargando...</p>
+        </div>
+        <div class="quadrant">
+            <h2>Humedad</h2>
+            <p id="humidity">Cargando...</p>
+        </div>
+        <div class="quadrant">
+            <h2>Humedad del Suelo</h2>
+            <p id="soilMoisture">Cargando...</p>
+        </div>
+    </div>
 
-    <section id="grafico">
-      <h2>Gráficos de Sensores</h2>
-      <canvas id="tempChart"></canvas>
-      <canvas id="humChart"></canvas>
-      <canvas id="humSueloChart"></canvas>
-      <canvas id="dpvChart"></canvas>
-    </section>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-    <section id="controles">
-      <h2>Controles</h2>
-      <button id="ventilador-btn">Encender Ventilador</button>
-    </section>
-  </main>
-  <script src="script.js"></script>
+        function updateData() {
+            const ref = database.ref("data");
+
+            ref.once("value", (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById("temperature").innerText = data.temperature + " °C";
+                document.getElementById("humidity").innerText = data.humidity + " %";
+                document.getElementById("soilMoisture").innerText = data.soilMoisture + " %";
+            });
+        }
+
+        setInterval(updateData, 30000); // Actualizar cada 30 segundos
+    </script>
 </body>
 </html>
