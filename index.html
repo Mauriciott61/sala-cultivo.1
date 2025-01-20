@@ -3,22 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Sala de Cultivo</title>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Sala de Cultivo</title>
     <style>
         body {
-            background-color: #222222;
+            background-color: black;
             color: white;
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 0;
-            padding: 0;
         }
         h1 {
             font-size: 36px;
-            margin-top: 20px;
         }
         .container {
             display: flex;
@@ -27,65 +21,137 @@
             padding: 20px;
         }
         .quadrant {
-            border: 2px solid #444;
-            padding: 20px;
-            margin: 15px;
+            border: 1px solid white;
+            padding: 10px;
+            margin: 10px;
             width: 45%;
-            min-width: 280px;
-            background-color: #333;
+            min-width: 300px;
         }
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 12px;
-            margin: 10px;
+            padding: 10px;
+            margin: 5px;
             cursor: pointer;
-            width: 100%;
-            font-size: 16px;
         }
         button:hover {
             background-color: #45a049;
         }
-        .status {
-            margin-top: 10px;
-            font-size: 18px;
+        .center {
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>Control de Sala de Cultivo</h1>
-
+    <h1>Sala de Cultivo</h1>
+    
+    <!-- Mostrar valores de los sensores -->
+    <div class="center">
+        <p><strong>Temperatura:</strong> <span id="temperatura">Cargando...</span> °C</p>
+        <p><strong>Humedad ambiente:</strong> <span id="humedad_ambiente">Cargando...</span> %</p>
+        <p><strong>Humedad del suelo:</strong> <span id="humedad_suelo">Cargando...</span> %</p>
+        <p><strong>Déficit de presión de vapor:</strong> <span id="deficit_presion_vapor">Cargando...</span></p>
+    </div>
+    
+    <!-- Contenedor de cuadrantes -->
     <div class="container">
+        <!-- Cuadrante de Luces -->
         <div class="quadrant">
             <h2>Luces</h2>
-            <button id="btn-lights-on">Encender Luces</button>
-            <button id="btn-lights-off">Apagar Luces</button>
-            <div id="lights-status" class="status">Estado: Desconocido</div>
+            <p>Estado: <span id="luces_estado">Cargando...</span></p>
+            <button onclick="toggleDevice('luces')">Alternar Luces</button>
         </div>
 
+        <!-- Cuadrante de Humidificador -->
         <div class="quadrant">
             <h2>Humidificador</h2>
-            <button id="btn-humidifier-on">Encender Humidificador</button>
-            <button id="btn-humidifier-off">Apagar Humidificador</button>
-            <div id="humidifier-status" class="status">Estado: Desconocido</div>
+            <p>Estado: <span id="humidificador_estado">Cargando...</span></p>
+            <button onclick="toggleDevice('humidificador')">Alternar Humidificador</button>
         </div>
 
+        <!-- Cuadrante de Extractor -->
         <div class="quadrant">
             <h2>Extractor</h2>
-            <button id="btn-extractor-on">Encender Extractor</button>
-            <button id="btn-extractor-off">Apagar Extractor</button>
-            <div id="extractor-status" class="status">Estado: Desconocido</div>
+            <p>Estado: <span id="extractor_estado">Cargando...</span></p>
+            <button onclick="toggleDevice('extractor')">Alternar Extractor</button>
         </div>
 
+        <!-- Cuadrante de Bomba de Riego -->
         <div class="quadrant">
-            <h2>Riego</h2>
-            <button id="btn-irrigation-on">Encender Riego</button>
-            <button id="btn-irrigation-off">Apagar Riego</button>
-            <div id="irrigation-status" class="status">Estado: Desconocido</div>
+            <h2>Bomba de Riego</h2>
+            <p>Estado: <span id="bomba_riego_estado">Cargando...</span></p>
+            <button onclick="toggleDevice('bomba_riego')">Alternar Bomba de Riego</button>
+        </div>
+
+        <!-- Cuadrante de Ventilador -->
+        <div class="quadrant">
+            <h2>Ventilador</h2>
+            <p>Estado: <span id="ventilador_estado">Cargando...</span></p>
+            <button onclick="toggleDevice('ventilador')">Alternar Ventilador</button>
         </div>
     </div>
 
-    <script src="firebase.js"></script>
+    <!-- Firebase JS SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+  apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+  authDomain: "sala-cultivo.firebaseapp.com",
+  databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+  projectId: "sala-cultivo",
+  storageBucket: "sala-cultivo.firebasestorage.app",
+  messagingSenderId: "388469961230",
+  appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+  measurementId: "G-72JQD67R0X"
+};
+        
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database(app);
+
+        // Obtener y actualizar el estado de los dispositivos y sensores
+        function updateDeviceState(device) {
+            const deviceRef = db.ref('controles/' + device);
+            deviceRef.on('value', (snapshot) => {
+                const state = snapshot.val();
+                document.getElementById(device + '_estado').innerText = state ? 'Encendido' : 'Apagado';
+            });
+        }
+
+        // Función para alternar el estado de los dispositivos
+        function toggleDevice(device) {
+            const deviceRef = db.ref('controles/' + device);
+            deviceRef.once('value', (snapshot) => {
+                const currentState = snapshot.val();
+                deviceRef.set(!currentState); // Alterna entre true/false
+            });
+        }
+
+        // Actualizar los valores de los sensores
+        function updateSensorData() {
+            const sensorsRef = db.ref('sensores');
+            sensorsRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                document.getElementById('temperatura').innerText = data.temperatura;
+                document.getElementById('humedad_ambiente').innerText = data.humedad_ambiente;
+                document.getElementById('humedad_suelo').innerText = data.humedad_suelo;
+                document.getElementById('deficit_presion_vapor').innerText = data.deficit_presion_vapor;
+            });
+        }
+
+        // Llamada para inicializar la página
+        window.onload = function() {
+            updateSensorData();
+            updateDeviceState('luces');
+            updateDeviceState('humidificador');
+            updateDeviceState('extractor');
+            updateDeviceState('bomba_riego');
+            updateDeviceState('ventilador');
+        };
+    </script>
 </body>
 </html>
