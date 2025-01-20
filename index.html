@@ -77,11 +77,12 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
-
+    <!-- Importar Firebase SDK como módulo -->
     <script type="module">
+        // Importar módulos específicos de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
+        import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js";
+
         // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
@@ -95,15 +96,15 @@
         };
 
         // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database(app);
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-        // Referencias de la base de datos
-        const dbRef = database.ref();
+        // Referencia a la base de datos
+        const dbRef = ref(database);
 
         // Función para obtener los datos de sensores y actualizar la interfaz
         function getSensorData() {
-            dbRef.child('sensores').get().then(snapshot => {
+            get(ref(dbRef, 'sensores')).then(snapshot => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     document.getElementById("temperatura").textContent = data.temperatura;
@@ -120,7 +121,7 @@
 
         // Función para obtener los controles de dispositivos y actualizar los botones
         function getControlData() {
-            dbRef.child('controles').get().then(snapshot => {
+            get(ref(dbRef, 'controles')).then(snapshot => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     document.getElementById("bomba_riego_btn").disabled = !data.bomba_riego;
@@ -138,10 +139,10 @@
 
         // Funciones para cambiar el estado de los controles
         function toggleControl(control) {
-            dbRef.child('controles').child(control).get().then(snapshot => {
+            get(ref(dbRef, `controles/${control}`)).then(snapshot => {
                 const currentState = snapshot.val();
-                dbRef.child('controles').update({
-                    [control]: !currentState
+                update(ref(dbRef), {
+                    [`controles/${control}`]: !currentState
                 });
             });
         }
