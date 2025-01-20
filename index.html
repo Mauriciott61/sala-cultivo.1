@@ -4,127 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Sala de Cultivo</title>
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
+    <!-- Cargar Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
         }
 
         .container {
-            width: 80%;
-            margin: 0 auto;
-            padding-top: 20px;
-        }
-
-        .card {
-            background-color: white;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: #fff;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
 
-        .card h2 {
-            margin-top: 0;
+        h2 {
+            text-align: center;
+            color: #4CAF50;
         }
 
-        .sensor-value {
-            font-size: 1.5em;
-            color: #333;
+        p {
+            font-size: 18px;
+            margin: 10px 0;
         }
 
-        .sensor-value span {
+        .value {
             font-weight: bold;
-        }
-
-        .control-button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        .control-button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h2>Datos de Sensores</h2>
-            <p><strong>Temperatura:</strong> <span id="temperatura">Cargando...</span> °C</p>
-            <p><strong>Humedad ambiente:</strong> <span id="humedad_ambiente">Cargando...</span> %</p>
-            <p><strong>Humedad del suelo:</strong> <span id="humedad_suelo">Cargando...</span> %</p>
-            <p><strong>Déficit de presión de vapor:</strong> <span id="deficit_presion_vapor">Cargando...</span></p>
-        </div>
-        
-        <div class="card">
-            <h2>Controles</h2>
-            <button id="bomba_riego" class="control-button">Bomba de Riego: OFF</button>
-            <button id="extractor" class="control-button">Extractor: OFF</button>
-            <button id="humidificador" class="control-button">Humidificador: OFF</button>
-            <button id="luces" class="control-button">Luces: OFF</button>
-            <button id="ventilador" class="control-button">Ventilador: OFF</button>
-        </div>
-    </div>
 
-    <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-            authDomain: "sala-cultivo.firebaseapp.com",
-            databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-            projectId: "sala-cultivo",
-            storageBucket: "sala-cultivo.firebasestorage.app",
-            messagingSenderId: "388469961230",
-            appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-            measurementId: "G-72JQD67R0X"
-        };
+<div class="container">
+    <h2>Datos de Sensores</h2>
+    <p><strong>Temperatura:</strong> <span id="temperatura" class="value">Cargando...</span> °C</p>
+    <p><strong>Humedad ambiente:</strong> <span id="humedad_ambiente" class="value">Cargando...</span> %</p>
+    <p><strong>Humedad del suelo:</strong> <span id="humedad_suelo" class="value">Cargando...</span> %</p>
+    <p><strong>Déficit de presión de vapor:</strong> <span id="deficit_presion_vapor" class="value">Cargando...</span></p>
+</div>
 
-        // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(app);
+<script>
+    // Configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+        authDomain: "sala-cultivo.firebaseapp.com",
+        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+        projectId: "sala-cultivo",
+        storageBucket: "sala-cultivo.firebasestorage.app",
+        messagingSenderId: "388469961230",
+        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+        measurementId: "G-72JQD67R0X"
+    };
 
-        // Función para actualizar los datos de los sensores
-        function updateSensorData() {
-            const sensorsRef = db.ref('sensores');
-            sensorsRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                document.getElementById('temperatura').innerText = data.temperatura || "N/A";
-                document.getElementById('humedad_ambiente').innerText = data.humedad_ambiente || "N/A";
-                document.getElementById('humedad_suelo').innerText = data.humedad_suelo || "N/A";
-                document.getElementById('deficit_presion_vapor').innerText = data.deficit_presion_vapor || "N/A";
-            });
-        }
+    // Inicialización de Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database(app);
 
-        // Función para actualizar los controles
-        function updateControlButtons() {
-            const controlsRef = db.ref('controles');
-            controlsRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                document.getElementById('bomba_riego').innerText = "Bomba de Riego: " + (data.bomba_riego ? "ON" : "OFF");
-                document.getElementById('extractor').innerText = "Extractor: " + (data.extractor ? "ON" : "OFF");
-                document.getElementById('humidificador').innerText = "Humidificador: " + (data.humidificador ? "ON" : "OFF");
-                document.getElementById('luces').innerText = "Luces: " + (data.luces ? "ON" : "OFF");
-                document.getElementById('ventilador').innerText = "Ventilador: " + (data.ventilador ? "ON" : "OFF");
-            });
-        }
+    // Función para actualizar los datos de los sensores
+    function updateSensorData() {
+        const sensorsRef = db.ref('sensores');
+        sensorsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            document.getElementById('temperatura').innerText = data.temperatura || "N/A";
+            document.getElementById('humedad_ambiente').innerText = data.humedad_ambiente || "N/A";
+            document.getElementById('humedad_suelo').innerText = data.humedad_suelo || "N/A";
+            document.getElementById('deficit_presion_vapor').innerText = data.deficit_presion_vapor || "N/A";
+        });
+    }
 
-        // Llamar a las funciones para actualizar los datos
-        updateSensorData();
-        updateControlButtons();
-    </script>
+    // Llamar a la función para actualizar los datos
+    updateSensorData();
+</script>
+
 </body>
 </html>
