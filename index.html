@@ -28,42 +28,31 @@
 
     // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
+    console.log('Firebase inicializado');
 
     // Leer datos de Firebase
     var database = firebase.database();
-
-    // Referencia a la ruta 'sensores' para obtener los datos de sensores
     var sensoresRef = database.ref('/sensores/');
+
     sensoresRef.on('value', function(snapshot) {
       var data = snapshot.val();
-      console.log(data);  // Muestra los datos de sensores en la consola
+      console.log('Datos de sensores:', data);  // Verifica los datos en la consola
 
-      // Mostrar los datos en el HTML
-      var dataHtml = `
-        <h2>Datos de Sensores</h2>
-        <ul>
-          <li>Temperatura: ${data.temperatura} °C</li>
-          <li>Humedad: ${data.humedad} %</li>
-          <li>Humedad Ambiente: ${data.humedad_ambiente} %</li>
-          <li>Humedad Suelo: ${data.humedad_suelo} %</li>
-          <li>Déficit de Presión de Vapor: ${data.deficit_presion_vapor} kPa</li>
-        </ul>
-      `;
-      document.getElementById('data').innerHTML = dataHtml;
-    });
-
-    // Referencia a la ruta 'controles' para obtener el estado del ventilador
-    var controlesRef = database.ref('/controles/ventilador');
-    controlesRef.on('value', function(snapshot) {
-      var ventilador = snapshot.val();
-      console.log("Ventilador estado:", ventilador);  // Muestra el estado del ventilador en la consola
-
-      // Mostrar el estado del ventilador
-      var ventiladorHtml = `
-        <h2>Estado del Ventilador</h2>
-        <p>Ventilador: ${ventilador ? 'Encendido' : 'Apagado'}</p>
-      `;
-      document.getElementById('data').innerHTML += ventiladorHtml;
+      if (data) {
+        var dataHtml = `
+          <h2>Datos de Sensores</h2>
+          <ul>
+            <li>Temperatura: ${data.temperatura} °C</li>
+            <li>Humedad: ${data.humedad} %</li>
+            <li>Humedad Ambiente: ${data.humedad_ambiente} %</li>
+            <li>Humedad Suelo: ${data.humedad_suelo} %</li>
+            <li>Déficit de Presión de Vapor: ${data.deficit_presion_vapor} kPa</li>
+          </ul>
+        `;
+        document.getElementById('data').innerHTML = dataHtml;
+      } else {
+        document.getElementById('data').innerHTML = 'No se encontraron datos.';
+      }
     });
   </script>
 </body>
