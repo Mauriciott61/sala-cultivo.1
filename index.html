@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoreo y Control de Sala de Cultivo</title>
-    <!-- Estilos CSS -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -77,9 +76,8 @@
         </div>
     </div>
 
-    <!-- Importar Firebase SDK como módulo -->
     <script type="module">
-        // Importar módulos específicos de Firebase
+        // Importar los módulos de Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js";
         import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js";
 
@@ -99,12 +97,11 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Referencia a la base de datos
-        const dbRef = ref(database);
-
         // Función para obtener los datos de sensores y actualizar la interfaz
         function getSensorData() {
-            get(ref(dbRef, 'sensores')).then(snapshot => {
+            // Obtener los datos desde la ruta 'sensores' en Firebase Realtime Database
+            const dbRef = ref(database, 'sensores');
+            get(dbRef).then(snapshot => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     document.getElementById("temperatura").textContent = data.temperatura;
@@ -115,13 +112,15 @@
                     console.log("No hay datos");
                 }
             }).catch(error => {
-                console.error(error);
+                console.error("Error al obtener los datos:", error);
             });
         }
 
         // Función para obtener los controles de dispositivos y actualizar los botones
         function getControlData() {
-            get(ref(dbRef, 'controles')).then(snapshot => {
+            // Obtener los datos desde la ruta 'controles' en Firebase Realtime Database
+            const dbRef = ref(database, 'controles');
+            get(dbRef).then(snapshot => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     document.getElementById("bomba_riego_btn").disabled = !data.bomba_riego;
@@ -133,17 +132,20 @@
                     console.log("No hay datos de controles");
                 }
             }).catch(error => {
-                console.error(error);
+                console.error("Error al obtener los datos de controles:", error);
             });
         }
 
         // Funciones para cambiar el estado de los controles
         function toggleControl(control) {
-            get(ref(dbRef, `controles/${control}`)).then(snapshot => {
+            const dbRef = ref(database, `controles/${control}`);
+            get(dbRef).then(snapshot => {
                 const currentState = snapshot.val();
-                update(ref(dbRef), {
+                update(ref(database), {
                     [`controles/${control}`]: !currentState
                 });
+            }).catch(error => {
+                console.error("Error al cambiar el estado del control:", error);
             });
         }
 
