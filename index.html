@@ -243,20 +243,19 @@
         console.error("Error agregando evento:", error);
       });
   }
- // Función para añadir event listeners (MODIFICADA)
-        function addControlListener(buttonId, controlName, state) {
-            const button = document.getElementById(buttonId);
-            if (!button) {
-                console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM. Revisa el HTML.`);
-                return;
-            }
-            button.addEventListener('click', () => {
-                console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
-                actualizarControl(controlName, state).catch(error => { // Manejo de errores centralizado
-                    console.error("Error en la cadena de promesas:", error);
-                });
-            });
-        }
+ function addControlListener(buttonId, controlName, state) {
+    const button = document.getElementById(buttonId);
+    console.log("Buscando botón con ID:", buttonId); // NUEVO: Mensaje de depuración
+    if (!button) {
+        console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM. Revisa el HTML.`);
+        console.log("El botón es:", button); // NUEVO: Mostrar el valor del botón (debería ser null)
+        return;
+    }
+    console.log("Botón encontrado:", button); // NUEVO: Mensaje si el botón se encuentra
+    button.addEventListener('click', () => {
+        // ... (resto del código)
+    });
+}
 
         // Event listeners (DENTRO de DOMContentLoaded)
         document.addEventListener('DOMContentLoaded', () => {
