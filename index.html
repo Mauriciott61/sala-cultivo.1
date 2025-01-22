@@ -189,8 +189,7 @@
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const db = getDatabase(app);
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM cargado'); // Para verificar en la consola
+
   // ... resto del código de event listeners
 });
   // Obtener datos actuales de la base de datos
@@ -244,35 +243,31 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Error agregando evento:", error);
       });
   }
-// Event listeners - **CORRECCIÓN PRINCIPAL**
+ // Función para añadir event listeners (MODIFICADA)
+        function addControlListener(buttonId, controlName, state) {
+            const button = document.getElementById(buttonId);
+            if (!button) {
+                console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM. Revisa el HTML.`);
+                return;
+            }
+            button.addEventListener('click', () => {
+                console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
+                actualizarControl(controlName, state).catch(error => { // Manejo de errores centralizado
+                    console.error("Error en la cadena de promesas:", error);
+                });
+            });
+        }
+
+        // Event listeners (DENTRO de DOMContentLoaded)
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado'); // Para verificar en la consola
-  // Actualizar controles manualmente (ejemplo para las luces)
-  document.getElementById('lights-manual-on').addEventListener('click', () => {
-    actualizarControl('luces', true);
-  });
+            console.log('DOMContentLoaded disparado. El DOM está listo.');
 
-  document.getElementById('lights-manual-off').addEventListener('click', () => {
-    actualizarControl('luces', false);
-  });
-
-  // Lo mismo para el humidificador, extractor, etc.
-  document.getElementById('humidifier-manual-on').addEventListener('click', () => {
-    actualizarControl('humidificador', true);
-  });
-
-  document.getElementById('humidifier-manual-off').addEventListener('click', () => {
-    actualizarControl('humidificador', false);
-  });
-
-  document.getElementById('extractor-manual-on').addEventListener('click', () => {
-    actualizarControl('extractor', true);
-  });
-
-  document.getElementById('extractor-manual-off').addEventListener('click', () => {
-    actualizarControl('extractor', false);
-  });
-    });
+            addControlListener('lights-manual-on', 'luces', true);
+            addControlListener('lights-manual-off', 'luces', false);
+            addControlListener('humidifier-manual-on', 'humidificador', true);
+            addControlListener('humidifier-manual-off', 'humidificador', false);
+            addControlListener('extractor-manual-on', 'extractor', true);
+        });
 
   // Cargar datos iniciales
   obtenerEstadoActual();
