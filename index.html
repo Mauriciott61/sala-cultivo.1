@@ -189,7 +189,10 @@
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const db = getDatabase(app);
-
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM cargado'); // Para verificar en la consola
+  // ... resto del código de event listeners
+});
   // Obtener datos actuales de la base de datos
   function obtenerEstadoActual() {
     const estadoRef = ref(db, 'estado_actual');
