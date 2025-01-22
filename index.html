@@ -170,6 +170,84 @@
 
  <!-- Agregar Firebase SDK -->
   <script type="module">
+    // Datos de la base de datos
+const data = {
+  "estado_actual": {
+    "controles": {
+      "bomba_riego": false,
+      "extractor": true,
+      "humidificador": true,
+      "luces": false,
+      "ventilador": false
+    },
+    "sensores": {
+      "deficit_presion_vapor": 2.3,
+      "humedad_ambiente": 39,
+      "humedad_suelo": 0,
+      "temperatura": 36.4
+    },
+    "timestamp": "2025-01-22T14:30:00Z"
+  },
+  "historial_eventos": {
+    "eventos": [
+      {
+        "dispositivo": "luces",
+        "responsable": "Usuario 1",
+        "timestamp": "2025-01-22T14:35:00Z",
+        "tipo": "cambio_control",
+        "valor_actual": true,
+        "valor_anterior": false
+      },
+      {
+        "sensor": "temperatura",
+        "timestamp": "2025-01-22T14:40:00Z",
+        "tipo": "lectura_sensor",
+        "valor": 33.3
+      }
+    ]
+  },
+  "sensores": {
+    "humedad": 48,
+    "temperatura": 33.8
+  },
+  "usuarios": {
+    "Usuario_1": {
+      "nombre": "Juan Pérez",
+      "rol": "Administrador",
+      "ultimo_acceso": "2025-01-22T14:00:00Z"
+    }
+  }
+};
+
+// Actualizar los elementos HTML con los valores de la base de datos
+
+// Sensores
+document.getElementById('temperature--span').textContent = data.estado_actual.sensores.temperatura;
+document.getElementById('humidity--span').textContent = data.estado_actual.sensores.humedad_ambiente;
+document.getElementById('dpv--span').textContent = data.estado_actual.sensores.deficit_presion_vapor;
+document.getElementById('soil-moisture--span').textContent = data.estado_actual.sensores.humedad_suelo;
+
+// Controles
+document.getElementById('lights-status').textContent = data.estado_actual.controles.luces ? 'Prendido' : 'Apagado';
+document.getElementById('humidifier-status').textContent = data.estado_actual.controles.humidificador ? 'Prendido' : 'Apagado';
+document.getElementById('extractor-status').textContent = data.estado_actual.controles.extractor ? 'Prendido' : 'Apagado';
+document.getElementById('watering-status').textContent = data.estado_actual.controles.bomba_riego ? 'Prendido' : 'Apagado';
+document.getElementById('fan-status').textContent = data.estado_actual.controles.ventilador ? 'Prendido' : 'Apagado';
+
+// Historial de eventos
+const eventosList = document.getElementById('eventos-list');
+data.historial_eventos.eventos.forEach(evento => {
+  const eventoElement = document.createElement('li');
+  eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
+  eventosList.appendChild(eventoElement);
+});
+
+// Información del usuario
+const usuario = data.usuarios['Usuario_1'];
+document.getElementById('usuario-nombre').textContent = usuario.nombre;
+document.getElementById('usuario-rol').textContent = usuario.rol;
+document.getElementById('usuario-ultimo-acceso').textContent = new Date(usuario.ultimo_acceso).toLocaleString();
+
     // Importar las funciones necesarias desde los SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
