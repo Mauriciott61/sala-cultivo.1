@@ -193,7 +193,26 @@
 
         // Funciones (obtenerEstadoActual, actualizarControl, agregarEventoHistorial) (sin cambios)
         function obtenerEstadoActual() { /* ... */ }
-        function actualizarControl(dispositivo, estado) { /* ... */ }
+        function actualizarControl(dispositivo, estado) {
+    if (!db) {
+        console.error("Error: db no está inicializado.");
+        return Promise.reject("db no está inicializado."); // Rechaza la promesa si db no está inicializado
+    }
+
+    const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
+    console.log("Referencia de Firebase:", controlRef);
+
+    // ***¡ESTO ES CRUCIAL: DEVOLVER LA PROMESA!***
+    return set(controlRef, estado) // Devuelve la promesa de set()
+        .then(() => {
+            console.log(`${dispositivo} actualizado a ${estado}`);
+            agregarEventoHistorial(dispositivo, estado);
+        })
+        .catch((error) => {
+            console.error("Error actualizando control:", error);
+            throw error; // Re-lanza el error para que se maneje en el listener
+        });
+}
         function agregarEventoHistorial(dispositivo, estado) { /* ... */ }
 
         // Función addControlListener (sin cambios)
