@@ -192,18 +192,36 @@ const analytics = getAnalytics(app);
 const db = getDatabase(app);
 
 function obtenerEstadoActual() {
-    const estadoRef = ref(db, 'estado_actual/controles');
-    onValue(estadoRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
-            document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
-            document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
-            document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
-            document.getElementById('ventilador-status').textContent = data.ventilador ? 'Prendido' : 'Apagado';
+    const controlesRef = ref(db, 'estado_actual/controles'); // Referencia para los controles
+    const sensoresRef = ref(db, 'estado_actual/sensores'); // Referencia para los sensores
+
+    onValue(controlesRef, (snapshot) => { // Escucha cambios en los CONTROLES
+        const dataControles = snapshot.val();
+        console.log("Datos de Controles:", dataControles);
+        if (dataControles) {
+            document.getElementById('lights-status').textContent = dataControles.luces ? 'Prendidas' : 'Apagadas';
+            document.getElementById('humidifier-status').textContent = dataControles.humidificador ? 'Prendido' : 'Apagado';
+            document.getElementById('extractor-status').textContent = dataControles.extractor ? 'Prendido' : 'Apagado';
+            document.getElementById('watering-status').textContent = dataControles.bomba_riego ? 'Prendido' : 'Apagado';
+            document.getElementById('ventilador-status').textContent = dataControles.ventilador ? 'Prendido' : 'Apagado';
         } else {
-            console.log("No hay datos en estado_actual/controles");
+            console.log("No hay datos de controles");
         }
+    });
+
+    onValue(sensoresRef, (snapshot) => { // Escucha cambios en los SENSORES
+        const dataSensores = snapshot.val();
+        console.log("Datos de Sensores:", dataSensores);
+        if (dataSensores) {
+            document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
+            document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
+            document.getElementById('dpv--span').textContent = dataSensores.deficit_presion_vapor || '--';
+            document.getElementById('soil-moisture--span').textContent = dataSensores.humedad_suelo || '--';
+        } else {
+            console.log("No hay datos de sensores");
+        }
+    }, (error) => {
+        console.error("Error al leer datos de sensores:", error);
     });
 }
 
