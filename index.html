@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -168,12 +168,13 @@
     <p>&copy; 2025 Sala de Cultivo</p>
   </footer>
 
+  <!-- Agregar Firebase SDK -->
   <script type="module">
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-
-    // Your web app's Firebase configuration
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    
+    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
       authDomain: "sala-cultivo.firebaseapp.com",
@@ -185,9 +186,50 @@
       measurementId: "G-72JQD67R0X"
     };
 
-    // Initialize Firebase
+    // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+
+    // Función para actualizar Firebase
+    function updateFirebase(path, value) {
+      const dbRef = ref(db, path);
+      set(dbRef, value);
+    }
+
+    // Funciones para escuchar cambios desde Firebase
+    function listenFirebase(path, callback) {
+      const dbRef = ref(db, path);
+      onValue(dbRef, (snapshot) => {
+        const data = snapshot.val();
+        callback(data);
+      });
+    }
+
+    // Código para actualizar datos de control
+    document.getElementById('dpv-min').addEventListener('input', (e) => {
+      updateFirebase('config/dpv-min', e.target.value);
+    });
+
+    document.getElementById('dpv-max').addEventListener('input', (e) => {
+      updateFirebase('config/dpv-max', e.target.value);
+    });
+
+    // Escuchar cambios en tiempo real desde Firebase y actualizar UI
+    listenFirebase('data/temperature', (data) => {
+      document.getElementById('temperature--span').textContent = data;
+    });
+
+    listenFirebase('data/humidity', (data) => {
+      document.getElementById('humidity--span').textContent = data;
+    });
+
+    listenFirebase('data/dpv', (data) => {
+      document.getElementById('dpv--span').textContent = data;
+    });
+
+    listenFirebase('data/soil-moisture', (data) => {
+      document.getElementById('soil-moisture--span').textContent = data;
+    });
   </script>
 </body>
 </html>
