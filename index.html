@@ -170,6 +170,97 @@
 
   <!-- Agregar Firebase SDK -->
   <script type="module">
+    // Función para actualizar el estado de los dispositivos en Firebase
+function updateDeviceState(device, state) {
+  const deviceRef = ref(db, `devices/${device}`);
+  set(deviceRef, state);
+}
+
+// Función para actualizar el horario de las luces (en horas) en Firebase
+function updateLightsSchedule(day, hours) {
+  const lightsScheduleRef = ref(db, `schedule/lights/${day}`);
+  set(lightsScheduleRef, hours);
+}
+
+// Agregar control para las luces
+document.getElementById('lights-manual-on').addEventListener('click', () => {
+  updateDeviceState('lights', 'on');
+});
+
+document.getElementById('lights-manual-off').addEventListener('click', () => {
+  updateDeviceState('lights', 'off');
+});
+
+document.getElementById('lights-timer-mode').addEventListener('click', () => {
+  // Suponiendo que tienes configurada la lógica de temporizador en Firebase
+  const hours = {
+    monday: document.getElementById('monday-hours').value,
+    tuesday: document.getElementById('tuesday-hours').value,
+    wednesday: document.getElementById('wednesday-hours').value,
+    thursday: document.getElementById('thursday-hours').value,
+    friday: document.getElementById('friday-hours').value,
+    saturday: document.getElementById('saturday-hours').value,
+    sunday: document.getElementById('sunday-hours').value
+  };
+
+  // Guardar el horario de las luces
+  for (const day in hours) {
+    updateLightsSchedule(day, hours[day]);
+  }
+});
+
+// Agregar control para el humidificador
+document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+  updateDeviceState('humidifier', 'on');
+});
+
+document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+  updateDeviceState('humidifier', 'off');
+});
+
+document.getElementById('humidifier-config-mode').addEventListener('click', () => {
+  const dpvMin = document.getElementById('dpv-min').value;
+  const dpvMax = document.getElementById('dpv-max').value;
+  updateDeviceState('humidifier-config', { min: dpvMin, max: dpvMax });
+});
+
+// Agregar control para el extractor
+document.getElementById('extractor-on-time').addEventListener('input', (event) => {
+  const onTime = event.target.value;
+  updateDeviceState('extractor-on-time', onTime);
+});
+
+document.getElementById('extractor-interval').addEventListener('input', (event) => {
+  const interval = event.target.value;
+  updateDeviceState('extractor-interval', interval);
+});
+
+document.getElementById('extractor-humidity-limit').addEventListener('input', (event) => {
+  const humidityLimit = event.target.value;
+  updateDeviceState('extractor-humidity-limit', humidityLimit);
+});
+
+// Agregar control para el riego
+document.getElementById('soil-moisture-min').addEventListener('input', (event) => {
+  const moistureMin = event.target.value;
+  updateDeviceState('watering-soil-moisture-min', moistureMin);
+});
+
+document.getElementById('watering-time').addEventListener('input', (event) => {
+  const wateringTime = event.target.value;
+  updateDeviceState('watering-time', wateringTime);
+});
+
+document.getElementById('watering-interval').addEventListener('input', (event) => {
+  const wateringInterval = event.target.value;
+  updateDeviceState('watering-interval', wateringInterval);
+});
+
+document.getElementById('soil-moisture-max').addEventListener('input', (event) => {
+  const moistureMax = event.target.value;
+  updateDeviceState('watering-soil-moisture-max', moistureMax);
+});
+
     // Importar las funciones necesarias desde los SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
