@@ -244,28 +244,25 @@
   }
  function addControlListener(buttonId, controlName, state) {
     const button = document.getElementById(buttonId);
-    console.log("Buscando botón con ID:", buttonId); // NUEVO: Mensaje de depuración
+    console.log("Buscando botón con ID:", buttonId);
     if (!button) {
-        console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM. Revisa el HTML.`);
-        console.log("El botón es:", button); // NUEVO: Mostrar el valor del botón (debería ser null)
+        console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
+        console.log("El botón es:", button);
         return;
     }
-    console.log("Botón encontrado:", button); // NUEVO: Mensaje si el botón se encuentra
+    console.log("Botón encontrado:", button);
+    console.log("Añadiendo event listener al botón:", buttonId); // Mensaje importante
     button.addEventListener('click', () => {
-        // ... (resto del código)
+        console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
+        actualizarControl(controlName, state)
+            .then(() => {
+                console.log("Operación completada con éxito.");
+            })
+            .catch((error) => {
+                console.error("Error en la operación:", error);
+            });
     });
 }
-
-        // Event listeners (DENTRO de DOMContentLoaded)
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOMContentLoaded disparado. El DOM está listo.');
-
-            addControlListener('lights-manual-on', 'luces', true);
-            addControlListener('lights-manual-off', 'luces', false);
-            addControlListener('humidifier-manual-on', 'humidificador', true);
-            addControlListener('humidifier-manual-off', 'humidificador', false);
-            addControlListener('extractor-manual-on', 'extractor', true);
-        });
 
   // Cargar datos iniciales
   obtenerEstadoActual();
