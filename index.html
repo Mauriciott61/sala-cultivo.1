@@ -168,25 +168,55 @@
     <p>&copy; 2025 Sala de Cultivo</p>
   </footer>
 
-  <!-- Agregar Firebase SDK -->
+ <!-- Agregar Firebase SDK -->
   <script type="module">
-    // Aquí se simulan los datos JSON para que se pueda usar en lugar de Firebase
-    const estado_actual = {
-      controles: {
-        bomba_riego: false,
-        extractor: true,
-        humidificador: true,
-        luces: false,
-        ventilador: false
-      },
-      sensores: {
-        deficit_presion_vapor: 2.3,
-        humedad_ambiente: 39,
-        humedad_suelo: 0,
-        temperatura: 36.4
-      }
+    // Importar las funciones necesarias desde los SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+  authDomain: "sala-cultivo.firebaseapp.com",
+  databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+  projectId: "sala-cultivo",
+  storageBucket: "sala-cultivo.firebasestorage.app",
+  messagingSenderId: "388469961230",
+  appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+  measurementId: "G-72JQD67R0X"
     };
+    
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
+    // Obtener referencia a los datos de la sala
+    const temperatureRef = ref(db, 'temperature');
+    const humidityRef = ref(db, 'humidity');
+    const dpvRef = ref(db, 'dpv');
+    const soilMoistureRef = ref(db, 'soil_moisture');
+    
+    // Escuchar cambios en la base de datos en tiempo real
+    onValue(temperatureRef, (snapshot) => {
+      const temperature = snapshot.val();
+      document.getElementById('temperature--span').textContent = temperature !== null ? temperature : '--';
+    });
+
+    onValue(humidityRef, (snapshot) => {
+      const humidity = snapshot.val();
+      document.getElementById('humidity--span').textContent = humidity !== null ? humidity : '--';
+    });
+
+    onValue(dpvRef, (snapshot) => {
+      const dpv = snapshot.val();
+      document.getElementById('dpv--span').textContent = dpv !== null ? dpv : '--';
+    });
+
+    onValue(soilMoistureRef, (snapshot) => {
+      const soilMoisture = snapshot.val();
+      document.getElementById('soil-moisture--span').textContent = soilMoisture !== null ? soilMoisture : '--';
+    });
+  
     // Actualizar los elementos con los valores de estado actual
     document.getElementById('temperature--span').textContent = estado_actual.sensores.temperatura;
     document.getElementById('humidity--span').textContent = estado_actual.sensores.humedad_ambiente;
