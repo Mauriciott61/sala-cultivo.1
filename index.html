@@ -263,16 +263,16 @@ document.getElementById('watering-time').addEventListener('change', function() {
 
 // Escuchar historial de eventos
 onValue(historialRef, (snapshot) => {
-  const eventos = snapshot.val().eventos || [];
-  const eventosList = document.getElementById('eventos-list');
-  eventosList.innerHTML = ''; // Limpiar eventos anteriores
-  eventos.forEach(evento => {
-    const eventoElement = document.createElement('li');
-    eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
-    eventosList.appendChild(eventoElement);
-
+    const eventos = snapshot.val().eventos || [];
+    const eventosList = document.getElementById('eventos-list');
+    eventosList.innerHTML = ''; // Limpiar eventos anteriores
+    eventos.forEach(evento => {
+        const eventoElement = document.createElement('li');
+        eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
+        eventosList.appendChild(eventoElement);
+    });
 });
-  });
+
 
 
 // Escuchar cambios en los usuarios
