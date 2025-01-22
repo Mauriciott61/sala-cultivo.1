@@ -77,22 +77,22 @@
 </head>
 <body>
   <header>
-    <h1 class="centered-title">Sala de Cultivo</h1>
+    <h1>Sala de Cultivo</h1>
   </header>
 
   <main>
     <!-- Datos en Tiempo Real -->
     <section id="realtime-data" class="center-section">
       <h2>Datos Actuales</h2>
-      <p>Temperatura: <span id="temperature">--</span>°C</p>
-      <p>Humedad Ambiente: <span id="humidity">--</span>%</p>
-      <p>Déficit de Presión de Vapor: <span id="dpv">--</span> kPa</p>
-      <p>Humedad del Suelo: <span id="soil-moisture">--</span>%</p>
+      <p>Temperatura: <span id="temperature--span">--</span>°C</p>
+      <p>Humedad Ambiente: <span id="humidity--span">--</span>%</p>
+      <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
+      <p>Humedad del Suelo: <span id="soil-moisture--span">--</span>%</p>
     </section>
 
     <!-- Control por Cuadrantes -->
     <div class="grid-container">
-      <!-- Cuadrante 1: Luces -->
+      <!-- Cuadrante 1 Luces -->
       <section id="lights-control" class="quadrant">
         <h2>Luces</h2>
         <p>Estado: <span id="lights-status">Apagadas</span></p>
@@ -101,17 +101,17 @@
         <button id="lights-timer-mode">Modo Manual Timer</button>
         <h3>Configuración de Horas</h3>
         <ul id="lights-schedule">
-          <li>Lunes: <input type="number" id="monday-hours" placeholder="Horas"></li>
-          <li>Martes: <input type="number" id="tuesday-hours" placeholder="Horas"></li>
-          <li>Miércoles: <input type="number" id="wednesday-hours" placeholder="Horas"></li>
-          <li>Jueves: <input type="number" id="thursday-hours" placeholder="Horas"></li>
-          <li>Viernes: <input type="number" id="friday-hours" placeholder="Horas"></li>
-          <li>Sábado: <input type="number" id="saturday-hours" placeholder="Horas"></li>
-          <li>Domingo: <input type="number" id="sunday-hours" placeholder="Horas"></li>
+          <li>Lunes <input type="number" id="monday-hours" placeholder="Horas"></li>
+          <li>Martes <input type="number" id="tuesday-hours" placeholder="Horas"></li>
+          <li>Miércoles <input type="number" id="wednesday-hours" placeholder="Horas"></li>
+          <li>Jueves <input type="number" id="thursday-hours" placeholder="Horas"></li>
+          <li>Viernes <input type="number" id="friday-hours" placeholder="Horas"></li>
+          <li>Sábado <input type="number" id="saturday-hours" placeholder="Horas"></li>
+          <li>Domingo <input type="number" id="sunday-hours" placeholder="Horas"></li>
         </ul>
       </section>
 
-      <!-- Cuadrante 2: Humidificador -->
+      <!-- Cuadrante 2 Humidificador -->
       <section id="humidifier-control" class="quadrant">
         <h2>Humidificador</h2>
         <p>Estado: <span id="humidifier-status">Apagado</span></p>
@@ -125,7 +125,7 @@
         <input type="number" id="dpv-max" placeholder="kPa">
       </section>
 
-      <!-- Cuadrante 3: Extractor -->
+      <!-- Cuadrante 3 Extractor -->
       <section id="extractor-control" class="quadrant">
         <h2>Extractor</h2>
         <p>Estado: <span id="extractor-status">Apagado</span></p>
@@ -138,7 +138,7 @@
         <input type="number" id="extractor-humidity-limit" placeholder="%">
       </section>
 
-      <!-- Cuadrante 4: Riego -->
+      <!-- Cuadrante 4 Riego -->
       <section id="watering-control" class="quadrant">
         <h2>Riego</h2>
         <p>Estado: <span id="watering-status">Apagado</span></p>
@@ -157,10 +157,10 @@
     <!-- Estado Detallado -->
     <section id="detailed-status">
       <h2>Estado Detallado</h2>
-      <p>Luces: <span id="lights-runtime">--</span> horas prendidas.</p>
-      <p>Humidificador: <span id="humidifier-runtime">--</span> horas prendido.</p>
-      <p>Extractor: <span id="extractor-runtime">--</span> ciclos completados.</p>
-      <p>Riego: <span id="watering-runtime">--</span> ciclos completados.</p>
+      <p>Luces: <span id="lights-runtime--span">--</span> horas prendidas.</p>
+      <p>Humidificador: <span id="humidifier-runtime--span">--</span> horas prendido.</p>
+      <p>Extractor: <span id="extractor-runtime--span">--</span> ciclos completados.</p>
+      <p>Riego: <span id="watering-runtime--span">--</span> ciclos completados.</p>
     </section>
   </main>
 
