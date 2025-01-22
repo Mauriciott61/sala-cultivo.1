@@ -218,10 +218,12 @@ onValue(estadoRef, (snapshot) => {
   document.getElementById('soil-moisture--span').textContent = estado.sensores.humedad_suelo || '--';
 
   // Controles
-document.getElementById('lights-status').textContent = estado.controles.luces ? 'Prendido' : 'Apagado';
-document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
-document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
-document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
+  document.getElementById('lights-status').textContent = estado.controles.luces || '--';
+  document.getElementById('humidifier-status').textContent = estado.controles.humidificador || '--';
+  document.getElementById('extractor-status').textContent = estado.controles.extractor || '--';
+  document.getElementById('watering-status').textContent = estado.controles.riego || '--';
+});
+
 
 // Luces
 document.getElementById('lights-manual-on').addEventListener('click', function() {
