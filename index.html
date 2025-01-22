@@ -170,142 +170,120 @@
 
  <!-- Agregar Firebase SDK -->
   <script type="module">
-    // Datos de la base de datos
-const data = {
-  "estado_actual": {
-    "controles": {
-      "bomba_riego": false,
-      "extractor": true,
-      "humidificador": true,
-      "luces": false,
-      "ventilador": false
-    },
-    "sensores": {
-      "deficit_presion_vapor": 2.3,
-      "humedad_ambiente": 39,
-      "humedad_suelo": 0,
-      "temperatura": 36.4
-    },
-    "timestamp": "2025-01-22T14:30:00Z"
-  },
-  "historial_eventos": {
-    "eventos": [
-      {
-        "dispositivo": "luces",
-        "responsable": "Usuario 1",
-        "timestamp": "2025-01-22T14:35:00Z",
-        "tipo": "cambio_control",
-        "valor_actual": true,
-        "valor_anterior": false
+  // Datos locales de la base de datos (ejemplo)
+  const data = {
+    "estado_actual": {
+      "controles": {
+        "bomba_riego": false,
+        "extractor": true,
+        "humidificador": true,
+        "luces": false,
+        "ventilador": false
       },
-      {
-        "sensor": "temperatura",
-        "timestamp": "2025-01-22T14:40:00Z",
-        "tipo": "lectura_sensor",
-        "valor": 33.3
+      "sensores": {
+        "deficit_presion_vapor": 2.3,
+        "humedad_ambiente": 39,
+        "humedad_suelo": 0,
+        "temperatura": 36.4
+      },
+      "timestamp": "2025-01-22T14:30:00Z"
+    },
+    "historial_eventos": {
+      "eventos": [
+        {
+          "dispositivo": "luces",
+          "responsable": "Usuario 1",
+          "timestamp": "2025-01-22T14:35:00Z",
+          "tipo": "cambio_control",
+          "valor_actual": true,
+          "valor_anterior": false
+        },
+        {
+          "sensor": "temperatura",
+          "timestamp": "2025-01-22T14:40:00Z",
+          "tipo": "lectura_sensor",
+          "valor": 33.3
+        }
+      ]
+    },
+    "usuarios": {
+      "Usuario_1": {
+        "nombre": "Juan Pérez",
+        "rol": "Administrador",
+        "ultimo_acceso": "2025-01-22T14:00:00Z"
       }
-    ]
-  },
-  "sensores": {
-    "humedad": 48,
-    "temperatura": 33.8
-  },
-  "usuarios": {
-    "Usuario_1": {
-      "nombre": "Juan Pérez",
-      "rol": "Administrador",
-      "ultimo_acceso": "2025-01-22T14:00:00Z"
     }
-  }
-};
+  };
 
-// Actualizar los elementos HTML con los valores de la base de datos
+  // Importar las funciones necesarias desde los SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-// Sensores
-document.getElementById('temperature--span').textContent = data.estado_actual.sensores.temperatura;
-document.getElementById('humidity--span').textContent = data.estado_actual.sensores.humedad_ambiente;
-document.getElementById('dpv--span').textContent = data.estado_actual.sensores.deficit_presion_vapor;
-document.getElementById('soil-moisture--span').textContent = data.estado_actual.sensores.humedad_suelo;
+  // Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+    authDomain: "sala-cultivo.firebaseapp.com",
+    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+    projectId: "sala-cultivo",
+    storageBucket: "sala-cultivo.firebasestorage.app",
+    messagingSenderId: "388469961230",
+    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+    measurementId: "G-72JQD67R0X"
+  };
 
-// Controles
-document.getElementById('lights-status').textContent = data.estado_actual.controles.luces ? 'Prendido' : 'Apagado';
-document.getElementById('humidifier-status').textContent = data.estado_actual.controles.humidificador ? 'Prendido' : 'Apagado';
-document.getElementById('extractor-status').textContent = data.estado_actual.controles.extractor ? 'Prendido' : 'Apagado';
-document.getElementById('watering-status').textContent = data.estado_actual.controles.bomba_riego ? 'Prendido' : 'Apagado';
-document.getElementById('fan-status').textContent = data.estado_actual.controles.ventilador ? 'Prendido' : 'Apagado';
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-// Historial de eventos
-const eventosList = document.getElementById('eventos-list');
-data.historial_eventos.eventos.forEach(evento => {
-  const eventoElement = document.createElement('li');
-  eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
-  eventosList.appendChild(eventoElement);
-});
+  // Obtener referencias a los datos de la sala en Firebase
+  const temperatureRef = ref(db, 'sensores/temperatura');
+  const humidityRef = ref(db, 'sensores/humedad');
+  const dpvRef = ref(db, 'sensores/deficit_presion_vapor');
+  const soilMoistureRef = ref(db, 'sensores/humedad_suelo');
 
-// Información del usuario
-const usuario = data.usuarios['Usuario_1'];
-document.getElementById('usuario-nombre').textContent = usuario.nombre;
-document.getElementById('usuario-rol').textContent = usuario.rol;
-document.getElementById('usuario-ultimo-acceso').textContent = new Date(usuario.ultimo_acceso).toLocaleString();
+  // Escuchar cambios en la base de datos en tiempo real
+  onValue(temperatureRef, (snapshot) => {
+    const temperature = snapshot.val();
+    document.getElementById('temperature--span').textContent = temperature !== null ? temperature : '--';
+  });
 
-    // Importar las funciones necesarias desde los SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-    
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-  authDomain: "sala-cultivo.firebaseapp.com",
-  databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-  projectId: "sala-cultivo",
-  storageBucket: "sala-cultivo.firebasestorage.app",
-  messagingSenderId: "388469961230",
-  appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-  measurementId: "G-72JQD67R0X"
-    };
-    
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  onValue(humidityRef, (snapshot) => {
+    const humidity = snapshot.val();
+    document.getElementById('humidity--span').textContent = humidity !== null ? humidity : '--';
+  });
 
-    // Obtener referencia a los datos de la sala
-    const temperatureRef = ref(db, 'temperature');
-    const humidityRef = ref(db, 'humidity');
-    const dpvRef = ref(db, 'dpv');
-    const soilMoistureRef = ref(db, 'soil_moisture');
-    
-    // Escuchar cambios en la base de datos en tiempo real
-    onValue(temperatureRef, (snapshot) => {
-      const temperature = snapshot.val();
-      document.getElementById('temperature--span').textContent = temperature !== null ? temperature : '--';
-    });
+  onValue(dpvRef, (snapshot) => {
+    const dpv = snapshot.val();
+    document.getElementById('dpv--span').textContent = dpv !== null ? dpv : '--';
+  });
 
-    onValue(humidityRef, (snapshot) => {
-      const humidity = snapshot.val();
-      document.getElementById('humidity--span').textContent = humidity !== null ? humidity : '--';
-    });
+  onValue(soilMoistureRef, (snapshot) => {
+    const soilMoisture = snapshot.val();
+    document.getElementById('soil-moisture--span').textContent = soilMoisture !== null ? soilMoisture : '--';
+  });
 
-    onValue(dpvRef, (snapshot) => {
-      const dpv = snapshot.val();
-      document.getElementById('dpv--span').textContent = dpv !== null ? dpv : '--';
-    });
+  // Actualizar los elementos con los valores de estado actual (para los controles)
+  document.getElementById('lights-status').textContent = data.estado_actual.controles.luces ? 'Prendido' : 'Apagado';
+  document.getElementById('humidifier-status').textContent = data.estado_actual.controles.humidificador ? 'Prendido' : 'Apagado';
+  document.getElementById('extractor-status').textContent = data.estado_actual.controles.extractor ? 'Prendido' : 'Apagado';
+  document.getElementById('watering-status').textContent = data.estado_actual.controles.bomba_riego ? 'Prendido' : 'Apagado';
+  document.getElementById('fan-status').textContent = data.estado_actual.controles.ventilador ? 'Prendido' : 'Apagado';
 
-    onValue(soilMoistureRef, (snapshot) => {
-      const soilMoisture = snapshot.val();
-      document.getElementById('soil-moisture--span').textContent = soilMoisture !== null ? soilMoisture : '--';
-    });
-  
-    // Actualizar los elementos con los valores de estado actual
-    document.getElementById('temperature--span').textContent = estado_actual.sensores.temperatura;
-    document.getElementById('humidity--span').textContent = estado_actual.sensores.humedad_ambiente;
-    document.getElementById('dpv--span').textContent = estado_actual.sensores.deficit_presion_vapor;
-    document.getElementById('soil-moisture--span').textContent = estado_actual.sensores.humedad_suelo;
+  // Historial de eventos
+  const eventosList = document.getElementById('eventos-list');
+  data.historial_eventos.eventos.forEach(evento => {
+    const eventoElement = document.createElement('li');
+    eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
+    eventosList.appendChild(eventoElement);
+  });
 
-    // Actualizar estado de los controles
-    document.getElementById('lights-status').textContent = estado_actual.controles.luces ? 'Prendido' : 'Apagado';
-    document.getElementById('humidifier-status').textContent = estado_actual.controles.humidificador ? 'Prendido' : 'Apagado';
-    document.getElementById('extractor-status').textContent = estado_actual.controles.extractor ? 'Prendido' : 'Apagado';
-    document.getElementById('watering-status').textContent = estado_actual.controles.bomba_riego ? 'Prendido' : 'Apagado';
+  // Información del usuario
+  const usuario = data.usuarios['Usuario_1'];
+  document.getElementById('usuario-nombre').textContent = usuario.nombre;
+  document.getElementById('usuario-rol').textContent = usuario.rol;
+  document.getElementById('usuario-ultimo-acceso').textContent = new Date(usuario.ultimo_acceso).toLocaleString();
+</script>
+
   </script>
 </body>
 </html>
