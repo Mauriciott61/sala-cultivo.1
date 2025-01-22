@@ -91,7 +91,22 @@
    
 
     <!-- Control por Cuadrantes -->
-    <div class="grid-container">
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas iguales */
+    grid-template-rows: 1fr 1fr;    /* Dos filas que ocupan el mismo espacio vertical */
+    gap: 20px;
+    padding: 20px;
+    height: 100%; /* Asegura que el grid ocupe todo el alto disponible */
+}
+
+main{
+    height: 100vh;
+}
+body{
+    min-height: 100vh;
+    margin: 0;
+}
       <!-- Cuadrante 1 Luces -->
       <section id="lights-control" class="quadrant">
         <h2>Luces</h2>
