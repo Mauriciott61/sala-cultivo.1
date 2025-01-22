@@ -134,19 +134,20 @@
                 <input type="number" id="extractor-humidity-limit" placeholder="%">
             </section>
 
-            <section id="watering-control" class="quadrant">
-                <h2>Riego</h2>
-                <p>Estado: <span id="watering-status">Apagado</span></p>
-                <h3>Configuración</h3>
-                <label for="soil-moisture-min">Humedad Mínima:</label>
-                <input type="number" id="soil-moisture-min" placeholder="%">
-                <label for="watering-time">Tiempo de Riego:</label>
-                <input type="number" id="watering-time" placeholder="Segundos">
-                <label for="watering-interval">Intervalo:</label>
-                <input type="number" id="watering-interval" placeholder="Minutos">
-                <label for="soil-moisture-max">Humedad Máxima:</label>
-                <input type="number" id="soil-moisture-max" placeholder="%">
-            </section>
+           <section id="watering-control" class="quadrant">
+    <h2>Riego</h2>
+    <p>Estado: <span id="watering-status">Apagado</span></p>
+    <button id="watering-manual-on">Modo Manual Prendido</button> <--- ¡BOTÓN AGREGADO!
+    <h3>Configuración</h3>
+    <label for="soil-moisture-min">Humedad Mínima:</label>
+    <input type="number" id="soil-moisture-min" placeholder="%">
+    <label for="watering-time">Tiempo de Riego:</label>
+    <input type="number" id="watering-time" placeholder="Segundos">
+    <label for="watering-interval">Intervalo:</label>
+    <input type="number" id="watering-interval" placeholder="Minutos">
+    <label for="soil-moisture-max">Humedad Máxima:</label>
+    <input type="number" id="soil-moisture-max" placeholder="%">
+</section>
                 <section id="ventilador-control" class="quadrant">
                 <h2>Ventilador</h2>
                 <p>Estado: <span id="ventilador-status">Apagado</span></p>
