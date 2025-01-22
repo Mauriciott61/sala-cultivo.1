@@ -222,7 +222,7 @@ onValue(estadoRef, (snapshot) => {
   document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
   document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
   document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
-  document.getElementById('fan-status').textContent = estado.controles.ventilador ? 'Prendido' : 'Apagado';
+  
 });
 
 // Escuchar historial de eventos
