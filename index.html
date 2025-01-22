@@ -1,228 +1,171 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sala de Cultivo</title>
-  <style>
+!DOCTYPE html
+html lang=en
+head
+  meta charset=UTF-8
+  meta name=viewport content=width=device-width, initial-scale=1.0
+  titleSala de Cultivotitle
+  style
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      color: #333;
+      font-family Arial, sans-serif;
+      margin 0;
+      padding 0;
+      background-color #f4f4f9;
+      color #333;
     }
 
     header {
-      background-color: #4caf50;
-      color: white;
-      text-align: center;
-      padding: 1em 0;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      background-color #4caf50;
+      color white;
+      text-align center;
+      padding 1em 0;
+      box-shadow 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     header h1 {
-      font-size: 2.5em;
-      margin: 0;
+      font-size 2.5em;
+      margin 0;
     }
 
     .grid-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      padding: 20px;
+      display grid;
+      grid-template-columns repeat(2, 1fr);
+      gap 20px;
+      padding 20px;
     }
 
     .quadrant {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      background-color white;
+      padding 20px;
+      border-radius 8px;
+      box-shadow 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     button {
-      display: block;
-      width: 100%;
-      padding: 0.75em;
-      margin: 0.5em 0;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background-color 0.3s;
+      display block;
+      width 100%;
+      padding 0.75em;
+      margin 0.5em 0;
+      background-color #4caf50;
+      color white;
+      border none;
+      border-radius 4px;
+      font-size 1em;
+      cursor pointer;
+      transition background-color 0.3s;
     }
 
-    button:hover {
-      background-color: #45a049;
+    buttonhover {
+      background-color #45a049;
     }
 
-    input[type="number"], input[type="text"] {
-      width: 100%;
-      padding: 0.75em;
-      margin: 0.5em 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    input[type=number], input[type=text] {
+      width 100%;
+      padding 0.75em;
+      margin 0.5em 0;
+      border 1px solid #ccc;
+      border-radius 4px;
     }
 
     footer {
-      text-align: center;
-      padding: 1em 0;
-      background-color: #4caf50;
-      color: white;
-      margin-top: 2em;
+      text-align center;
+      padding 1em 0;
+      background-color #4caf50;
+      color white;
+      margin-top 2em;
     }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Sala de Cultivo</h1>
-  </header>
+  style
+head
+body
+  header
+    h1 class=centered-titleSala de Cultivoh1
+  header
 
-  <main>
-    <!-- Datos en Tiempo Real -->
-    <section id="realtime-data" class="center-section">
-      <h2>Datos Actuales</h2>
-      <p>Temperatura: <span id="temperature--span">--</span>°C</p>
-      <p>Humedad Ambiente: <span id="humidity--span">--</span>%</p>
-      <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
-      <p>Humedad del Suelo: <span id="soil-moisture--span">--</span>%</p>
-    </section>
+  main
+    !-- Datos en Tiempo Real --
+    section id=realtime-data class=center-section
+      h2Datos Actualesh2
+      pTemperatura span id=temperature--span°Cp
+      pHumedad Ambiente span id=humidity--span%p
+      pDéficit de Presión de Vapor span id=dpv--span kPap
+      pHumedad del Suelo span id=soil-moisture--span%p
+    section
 
-    <!-- Control por Cuadrantes -->
-    <div class="grid-container">
-      <!-- Cuadrante 1 Luces -->
-      <section id="lights-control" class="quadrant">
-        <h2>Luces</h2>
-        <p>Estado: <span id="lights-status">Apagadas</span></p>
-        <button id="lights-manual-on">Modo Manual Prendido</button>
-        <button id="lights-manual-off">Modo Manual Apagado</button>
-        <button id="lights-timer-mode">Modo Manual Timer</button>
-        <h3>Configuración de Horas</h3>
-        <ul id="lights-schedule">
-          <li>Lunes <input type="number" id="monday-hours" placeholder="Horas"></li>
-          <li>Martes <input type="number" id="tuesday-hours" placeholder="Horas"></li>
-          <li>Miércoles <input type="number" id="wednesday-hours" placeholder="Horas"></li>
-          <li>Jueves <input type="number" id="thursday-hours" placeholder="Horas"></li>
-          <li>Viernes <input type="number" id="friday-hours" placeholder="Horas"></li>
-          <li>Sábado <input type="number" id="saturday-hours" placeholder="Horas"></li>
-          <li>Domingo <input type="number" id="sunday-hours" placeholder="Horas"></li>
-        </ul>
-      </section>
+    !-- Control por Cuadrantes --
+    div class=grid-container
+      !-- Cuadrante 1 Luces --
+      section id=lights-control class=quadrant
+        h2Lucesh2
+        pEstado span id=lights-statusApagadasspanp
+        button id=lights-manual-onModo Manual Prendidobutton
+        button id=lights-manual-offModo Manual Apagadobutton
+        button id=lights-timer-modeModo Manual Timerbutton
+        h3Configuración de Horash3
+        ul id=lights-schedule
+          liLunes input type=number id=monday-hours placeholder=Horasli
+          liMartes input type=number id=tuesday-hours placeholder=Horasli
+          liMiércoles input type=number id=wednesday-hours placeholder=Horasli
+          liJueves input type=number id=thursday-hours placeholder=Horasli
+          liViernes input type=number id=friday-hours placeholder=Horasli
+          liSábado input type=number id=saturday-hours placeholder=Horasli
+          liDomingo input type=number id=sunday-hours placeholder=Horasli
+        ul
+      section
 
-      <!-- Cuadrante 2 Humidificador -->
-      <section id="humidifier-control" class="quadrant">
-        <h2>Humidificador</h2>
-        <p>Estado: <span id="humidifier-status">Prendido</span></p>
-        <button id="humidifier-manual-on">Modo Manual Prendido</button>
-        <button id="humidifier-manual-off">Modo Manual Apagado</button>
-        <button id="humidifier-config-mode">Modo Configurar</button>
-        <h3>Configuración DPV</h3>
-        <label for="dpv-min">Mínimo:</label>
-        <input type="number" id="dpv-min" placeholder="kPa">
-        <label for="dpv-max">Máximo:</label>
-        <input type="number" id="dpv-max" placeholder="kPa">
-      </section>
-  </main>
+      !-- Cuadrante 2 Humidificador --
+      section id=humidifier-control class=quadrant
+        h2Humidificadorh2
+        pEstado span id=humidifier-statusApagadospanp
+        button id=humidifier-manual-onModo Manual Prendidobutton
+        button id=humidifier-manual-offModo Manual Apagadobutton
+        button id=humidifier-config-modeModo Configurarbutton
+        h3Configuración DPVh3
+        label for=dpv-minMínimolabel
+        input type=number id=dpv-min placeholder=kPa
+        label for=dpv-maxMáximolabel
+        input type=number id=dpv-max placeholder=kPa
+      section
 
-  <footer>
-    <p>&copy; 2025 Sala de Cultivo. Todos los derechos reservados.</p>
-  </footer>
+      !-- Cuadrante 3 Extractor --
+      section id=extractor-control class=quadrant
+        h2Extractorh2
+        pEstado span id=extractor-statusApagadospanp
+        h3Configuraciónh3
+        label for=extractor-on-timeTiempo Prendidolabel
+        input type=number id=extractor-on-time placeholder=Segundos
+        label for=extractor-intervalIntervalolabel
+        input type=number id=extractor-interval placeholder=Minutos
+        label for=extractor-humidity-limitHumedad Máximalabel
+        input type=number id=extractor-humidity-limit placeholder=%
+      section
 
-  <script type="module" defer>
-  // Importar las funciones necesarias desde los SDKs
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+      !-- Cuadrante 4 Riego --
+      section id=watering-control class=quadrant
+        h2Riegoh2
+        pEstado span id=watering-statusApagadospanp
+        h3Configuraciónh3
+        label for=soil-moisture-minHumedad Mínimalabel
+        input type=number id=soil-moisture-min placeholder=%
+        label for=watering-timeTiempo de Riegolabel
+        input type=number id=watering-time placeholder=Segundos
+        label for=watering-intervalIntervalolabel
+        input type=number id=watering-interval placeholder=Minutos
+        label for=soil-moisture-maxHumedad Máximalabel
+        input type=number id=soil-moisture-max placeholder=%
+      section
+    div
 
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-    authDomain: "sala-cultivo.firebaseapp.com",
-    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-    projectId: "sala-cultivo",
-    storageBucket: "sala-cultivo.firebasestorage.app",
-    messagingSenderId: "388469961230",
-    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-    measurementId: "G-72JQD67R0X"
-  };
+    !-- Estado Detallado --
+    section id=detailed-status
+      h2Estado Detalladoh2
+      pLuces span id=lights-runtime--span horas prendidas.p
+      pHumidificador span id=humidifier-runtime--span horas prendido.p
+      pExtractor span id=extractor-runtime--span ciclos completados.p
+      pRiego span id=watering-runtime--span ciclos completados.p
+    section
+  main
 
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // Función para actualizar los datos en tiempo real
-  function actualizarDatosRealtime() {
-    const temperatureRef = ref(db, 'datos/temperatura');
-    const humidityRef = ref(db, 'datos/humedad');
-    const dpvRef = ref(db, 'datos/dpv');
-    const soilMoistureRef = ref(db, 'datos/humedad_suelo');
-
-    // Escuchar los cambios de los datos
-    onValue(temperatureRef, (snapshot) => {
-      const temperature = snapshot.val();
-      document.getElementById('temperature--span').innerText = temperature ? temperature : '--';
-    });
-
-    onValue(humidityRef, (snapshot) => {
-      const humidity = snapshot.val();
-      document.getElementById('humidity--span').innerText = humidity ? humidity : '--';
-    });
-
-    onValue(dpvRef, (snapshot) => {
-      const dpv = snapshot.val();
-      document.getElementById('dpv--span').innerText = dpv ? dpv : '--';
-    });
-
-    onValue(soilMoistureRef, (snapshot) => {
-      const soilMoisture = snapshot.val();
-      document.getElementById('soil-moisture--span').innerText = soilMoisture ? soilMoisture : '--';
-    });
-  }
-
-  // Llamar a la función para actualizar los datos en tiempo real
-  actualizarDatosRealtime();
-    
-   
-  // Funciones para controlar dispositivos manualmente
-  document.getElementById('lights-manual-on').addEventListener('click', () => {
-    // Lógica para prender las luces
-    const lightsRef = ref(db, 'controles/luces');
-    set(lightsRef, 'Prendido'); // Actualiza el estado de las luces en Firebase
-    console.log('Luces Prendidas');
-  });
-
-  document.getElementById('lights-manual-off').addEventListener('click', () => {
-    // Lógica para apagar las luces
-    const lightsRef = ref(db, 'controles/luces');
-    set(lightsRef, 'Apagado'); // Actualiza el estado de las luces en Firebase
-    console.log('Luces Apagadas');
-  });
-
-  document.getElementById('humidifier-manual-on').addEventListener('click', () => {
-    // Lógica para prender el humidificador
-    const humidifierRef = ref(db, 'controles/humidificador');
-    set(humidifierRef, 'Prendido'); // Actualiza el estado del humidificador en Firebase
-    console.log('Humidificador Prendido');
-  });
-
-  document.getElementById('humidifier-manual-off').addEventListener('click', () => {
-    // Lógica para apagar el humidificador
-    const humidifierRef = ref(db, 'controles/humidificador');
-    set(humidifierRef, 'Apagado'); // Actualiza el estado del humidificador en Firebase
-    console.log('Humidificador Apagado');
-  });
-
-  document.getElementById('humidifier-config-mode').addEventListener('click', () => {
-    const dpvMin = document.getElementById('dpv-min').value;
-    const dpvMax = document.getElementById('dpv-max').value;
-
-    const humidifierConfigRef = ref(db, 'configuraciones/humidificador');
-    set(humidifierConfigRef, { min: dpvMin, max: dpvMax }); // Actualiza los valores configurados en Firebase
-    console.log('Configuración Humidificador Actualizada');
-  });
-  </script>
-</html>
-
-</body>
-</html>
+  footer
+    p&copy; 2025 Sala de Cultivop
+  footer
+body
+html
