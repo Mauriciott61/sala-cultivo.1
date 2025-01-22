@@ -169,89 +169,119 @@
 
 
     <script type="module">
-        // Importaciones de Firebase (sin cambios)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-        import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+      // Importaciones de Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+    import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-        const firebaseConfig = {
-  apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-  authDomain: "sala-cultivo.firebaseapp.com",
-  databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-  projectId: "sala-cultivo",
-  storageBucket: "sala-cultivo.firebasestorage.app",
-  messagingSenderId: "388469961230",
-  appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-  measurementId: "G-72JQD67R0X"
-};
+    // Configuración de Firebase (¡REVISA QUE ESTÉ CORRECTA!)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk", // Reemplaza con tu API Key
+        authDomain: "sala-cultivo.firebaseapp.com",
+        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+        projectId: "sala-cultivo",
+        storageBucket: "sala-cultivo.firebasestorage.app",
+        messagingSenderId: "388469961230",
+        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+        measurementId: "G-72JQD67R0X"
+    };
 
+    // Inicialización de Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
 
-        // Inicialización de Firebase (sin cambios)
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getDatabase(app);
-
-        // Funciones (obtenerEstadoActual, actualizarControl, agregarEventoHistorial) (sin cambios)
-        function obtenerEstadoActual() { /* ... */ }
-        function actualizarControl(dispositivo, estado) {
-    if (!db) {
-        console.error("Error: db no está inicializado.");
-        return Promise.reject("db no está inicializado."); // Rechaza la promesa si db no está inicializado
+    function obtenerEstadoActual() {
+        const estadoRef = ref(db, 'estado_actual/controles');
+        onValue(estadoRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
+                document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
+                document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
+                document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado'; // Actualiza el estado del riego
+                document.getElementById('ventilador-status').textContent = data.ventilador ? 'Prendido' : 'Apagado'; // Actualiza el estado del ventilador
+            } else {
+                console.log("No hay datos en estado_actual/controles");
+            }
+        });
     }
 
-    const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
-    console.log("Referencia de Firebase:", controlRef);
-
-    // ***¡ESTO ES CRUCIAL: DEVOLVER LA PROMESA!***
-    return set(controlRef, estado) // Devuelve la promesa de set()
-        .then(() => {
-            console.log(`${dispositivo} actualizado a ${estado}`);
-            agregarEventoHistorial(dispositivo, estado);
-        })
-        .catch((error) => {
-            console.error("Error actualizando control:", error);
-            throw error; // Re-lanza el error para que se maneje en el listener
-        });
-}
-        function agregarEventoHistorial(dispositivo, estado) { /* ... */ }
-
-        // Función addControlListener (sin cambios)
-        function addControlListener(buttonId, controlName, state) {
-            const button = document.getElementById(buttonId);
-            console.log("Buscando botón con ID:", buttonId);
-            if (!button) {
-                console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
-                console.log("El botón es:", button);
-                return;
-            }
-            console.log("Botón encontrado:", button);
-            console.log("Añadiendo event listener al botón:", buttonId); // Mensaje importante
-            button.addEventListener('click', () => {
-                console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
-                actualizarControl(controlName, state)
-                    .then(() => {
-                        console.log("Operación completada con éxito.");
-                    })
-                    .catch((error) => {
-                        console.error("Error en la operación:", error);
-                    });
-            });
+    function actualizarControl(dispositivo, estado) {
+        if (!db) {
+            console.error("Error: db no está inicializado.");
+            return Promise.reject("db no está inicializado.");
         }
 
-        // ***¡ESTO ES LO QUE FALTABA!***
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOMContentLoaded disparado. El DOM está listo."); // Mensaje de confirmación
+        const controlRef = ref(db, 'estado_actual/controles/' + dispositivo); // ¡RUTA CORRECTA!
+        console.log("Referencia de Firebase:", controlRef);
 
-            addControlListener('lights-manual-on', 'luces', true);
-            addControlListener('lights-manual-off', 'luces', false);
-            addControlListener('humidifier-manual-on', 'humidificador', true);
-            addControlListener('humidifier-manual-off', 'humidificador', false);
-            addControlListener('extractor-manual-on', 'extractor', true);
-            // ... llamadas a addControlListener para otros botones
+        return set(controlRef, estado) // ¡DEVOLVER LA PROMESA ES CRUCIAL!
+            .then(() => {
+                console.log(`${dispositivo} actualizado a ${estado}`);
+                agregarEventoHistorial(dispositivo, estado);
+            })
+            .catch((error) => {
+                console.error("Error actualizando control:", error);
+                throw error; // Re-lanza el error
+            });
+    }
+
+    function agregarEventoHistorial(dispositivo, estado) {
+        const eventosRef = ref(db, 'historial_eventos/eventos');
+        const evento = {
+            dispositivo: dispositivo,
+            responsable: "Usuario 1",
+            timestamp: new Date().toISOString(),
+            tipo: "cambio_control",
+            valor_actual: estado,
+            valor_anterior: estado === true ? false : true
+        };
+        push(eventosRef, evento)
+            .then(() => {
+                console.log("Evento agregado al historial");
+            })
+            .catch((error) => {
+                console.error("Error agregando evento:", error);
+            });
+    }
+
+    function addControlListener(buttonId, controlName, state) {
+        const button = document.getElementById(buttonId);
+        console.log("Buscando botón con ID:", buttonId);
+        if (!button) {
+            console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
+            return; // Importante: salir de la función si el botón no se encuentra
+        }
+        console.log("Botón encontrado:", button);
+        console.log("Añadiendo event listener al botón:", buttonId);
+
+        button.addEventListener('click', () => {
+            console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
+            actualizarControl(controlName, state)
+                .then(() => {
+                    console.log("Operación completada con éxito.");
+                })
+                .catch((error) => {
+                    console.error("Error en la operación:", error);
+                });
         });
+    }
 
-        // Cargar datos iniciales (sin cambios)
-        obtenerEstadoActual();
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOMContentLoaded disparado. El DOM está listo.");
+
+        addControlListener('lights-manual-on', 'luces', true);
+        addControlListener('lights-manual-off', 'luces', false);
+        addControlListener('humidifier-manual-on', 'humidificador', true);
+        addControlListener('humidifier-manual-off', 'humidificador', false);
+        addControlListener('extractor-manual-on', 'extractor', true);
+        // Agrega los listeners para los botones de riego y ventilador
+        addControlListener('watering-manual-on', 'bomba_riego', true);
+        addControlListener('ventilador-manual-on', 'ventilador', true);
+    });
+
+    obtenerEstadoActual(); // Llama a la función para obtener el estado inicial
     </script>
 
   
