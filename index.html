@@ -218,11 +218,12 @@ onValue(estadoRef, (snapshot) => {
   document.getElementById('soil-moisture--span').textContent = estado.sensores.humedad_suelo || '--';
 
   // Controles
-  document.getElementById('lights-status').textContent = estado.controles.luces ? 'Prendido' : 'Apagado';
-  document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
-  document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
-  document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
-  // Luces
+document.getElementById('lights-status').textContent = estado.controles.luces ? 'Prendido' : 'Apagado';
+document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
+document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
+document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
+
+// Luces
 document.getElementById('lights-manual-on').addEventListener('click', function() {
     // Lógica para encender las luces manualmente
     estado.controles.luces = true;
@@ -260,9 +261,6 @@ document.getElementById('watering-time').addEventListener('change', function() {
     console.log(`Tiempo de riego: ${tiempoRiego}`);
 });
 
-  
-});
-
 // Escuchar historial de eventos
 onValue(historialRef, (snapshot) => {
   const eventos = snapshot.val().eventos || [];
@@ -272,8 +270,9 @@ onValue(historialRef, (snapshot) => {
     const eventoElement = document.createElement('li');
     eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
     eventosList.appendChild(eventoElement);
-  });
+
 });
+
 
 // Escuchar cambios en los usuarios
 onValue(usuariosRef, (snapshot) => {
