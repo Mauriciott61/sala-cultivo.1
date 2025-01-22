@@ -75,6 +75,16 @@
     }
   </style>
 </head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala de Cultivo</title>
+  <style>
+    /* Aquí puedes agregar tus estilos CSS */
+  </style>
+</head>
 <body>
   <header>
     <h1>Sala de Cultivo</h1>
@@ -84,10 +94,10 @@
     <!-- Datos en Tiempo Real -->
     <section id="realtime-data" class="center-section">
       <h2>Datos Actuales</h2>
-      <p>Temperatura: <span id="temperature--span">36.4</span>°C</p>
-      <p>Humedad Ambiente: <span id="humidity--span">39</span>%</p>
-      <p>Déficit de Presión de Vapor: <span id="dpv--span">2.3</span> kPa</p>
-      <p>Humedad del Suelo: <span id="soil-moisture--span">0</span>%</p>
+      <p>Temperatura: <span id="temperature--span">--</span>°C</p>
+      <p>Humedad Ambiente: <span id="humidity--span">--</span>%</p>
+      <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
+      <p>Humedad del Suelo: <span id="soil-moisture--span">--</span>%</p>
     </section>
 
     <!-- Control por Cuadrantes -->
@@ -179,114 +189,83 @@
   </main>
 
   <footer>
+    <p>&copy; 2025 Sala de Cultivo. Todos los derechos reservados.</p>
+  </footer>
 
-<!-- Agregar Firebase SDK -->
-<script type="module">
-  // Importar las funciones necesarias desde los SDKs
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-  
-  // Configuración de Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-    authDomain: "sala-cultivo.firebaseapp.com",
-    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-    projectId: "sala-cultivo",
-    storageBucket: "sala-cultivo.firebasestorage.app",
-    messagingSenderId: "388469961230",
-    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-    measurementId: "G-72JQD67R0X"
-  };
-  
-  // Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+  <script type="module">
+    // Importar las funciones necesarias desde los SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-// Obtener referencia a los datos de la sala
-const estadoRef = ref(db, 'estado_actual');
-const historialRef = ref(db, 'historial_eventos');
-const usuariosRef = ref(db, 'usuarios');
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+      authDomain: "sala-cultivo.firebaseapp.com",
+      databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+      projectId: "sala-cultivo",
+      storageBucket: "sala-cultivo.firebasestorage.app",
+      messagingSenderId: "388469961230",
+      appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+      measurementId: "G-72JQD67R0X"
+    };
 
-// Escuchar cambios en la base de datos en tiempo real
-onValue(estadoRef, (snapshot) => {
-  const estado = snapshot.val();
-  
-  // Sensores
-  document.getElementById('temperature--span').textContent = estado.sensores.temperatura || '--';
-  document.getElementById('humidity--span').textContent = estado.sensores.humedad_ambiente || '--';
-  document.getElementById('dpv--span').textContent = estado.sensores.deficit_presion_vapor || '--';
-  document.getElementById('soil-moisture--span').textContent = estado.sensores.humedad_suelo || '--';
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  // Controles
-  document.getElementById('lights-status').textContent = estado.controles.luces || '--';
-  document.getElementById('humidifier-status').textContent = estado.controles.humidificador || '--';
-  document.getElementById('extractor-status').textContent = estado.controles.extractor || '--';
-  document.getElementById('watering-status').textContent = estado.controles.riego || '--';
-});
+    // Obtener referencia a los datos de la sala
+    const estadoRef = ref(db, 'estado_actual');
+    
+    // Escuchar cambios en la base de datos en tiempo real
+    onValue(estadoRef, (snapshot) => {
+      const estado = snapshot.val();
+      
+      // Actualizar los datos de la página con los valores en tiempo real
+      document.getElementById('temperature--span').textContent = estado.sensores.temperatura || '--';
+      document.getElementById('humidity--span').textContent = estado.sensores.humedad_ambiente || '--';
+      document.getElementById('dpv--span').textContent = estado.sensores.deficit_presion_vapor || '--';
+      document.getElementById('soil-moisture--span').textContent = estado.sensores.humedad_suelo || '--';
 
-
-// Luces
-document.getElementById('lights-manual-on').addEventListener('click', function() {
-    // Lógica para encender las luces manualmente
-    estado.controles.luces = true;
-    document.getElementById('lights-status').textContent = 'Prendido';
-});
-
-document.getElementById('lights-manual-off').addEventListener('click', function() {
-    // Lógica para apagar las luces manualmente
-    estado.controles.luces = false;
-    document.getElementById('lights-status').textContent = 'Apagado';
-});
-
-// Humidificador
-document.getElementById('humidifier-manual-on').addEventListener('click', function() {
-    estado.controles.humidificador = true;
-    document.getElementById('humidifier-status').textContent = 'Prendido';
-});
-
-document.getElementById('humidifier-manual-off').addEventListener('click', function() {
-    estado.controles.humidificador = false;
-    document.getElementById('humidifier-status').textContent = 'Apagado';
-});
-
-// Extractor
-document.getElementById('extractor-on-time').addEventListener('change', function() {
-    // Lógica para actualizar el tiempo de encendido del extractor
-    const tiempo = this.value;
-    console.log(Tiempo de encendido del extractor: ${tiempo});
-});
-
-// Riego
-document.getElementById('watering-time').addEventListener('change', function() {
-    // Lógica para actualizar el tiempo de riego
-    const tiempoRiego = this.value;
-    console.log(Tiempo de riego: ${tiempoRiego});
-});
-
-// Escuchar historial de eventos
-onValue(historialRef, (snapshot) => {
-    const eventos = snapshot.val().eventos || [];
-    const eventosList = document.getElementById('eventos-list');
-    eventosList.innerHTML = ''; // Limpiar eventos anteriores
-    eventos.forEach(evento => {
-        const eventoElement = document.createElement('li');
-        eventoElement.textContent = ${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor});
-        eventosList.appendChild(eventoElement);
+      // Controles de dispositivos
+      document.getElementById('lights-status').textContent = estado.controles.luces || '--';
+      document.getElementById('humidifier-status').textContent = estado.controles.humidificador || '--';
+      document.getElementById('extractor-status').textContent = estado.controles.extractor || '--';
+      document.getElementById('watering-status').textContent = estado.controles.riego || '--';
     });
-});
 
+    // Funciones para controlar dispositivos manualmente
+    document.getElementById('lights-manual-on').addEventListener('click', () => {
+      // Lógica para prender luces
+    });
 
+    document.getElementById('lights-manual-off').addEventListener('click', () => {
+      // Lógica para apagar luces
+    });
 
-// Escuchar cambios en los usuarios
-onValue(usuariosRef, (snapshot) => {
-  const usuario = snapshot.val()['Usuario_1'];
-  if (usuario) {
-    document.getElementById('usuario-nombre').textContent = usuario.nombre;
-    document.getElementById('usuario-rol').textContent = usuario.rol;
-    document.getElementById('usuario-ultimo-acceso').textContent = new Date(usuario.ultimo_acceso).toLocaleString();
-    }
-  });
+    document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+      // Lógica para prender humidificador
+    });
 
+    document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+      // Lógica para apagar humidificador
+    });
+
+    document.getElementById('extractor-manual-on').addEventListener('click', () => {
+      // Lógica para prender extractor
+    });
+
+    document.getElementById('extractor-manual-off').addEventListener('click', () => {
+      // Lógica para apagar extractor
+    });
+
+    document.getElementById('watering-manual-on').addEventListener('click', () => {
+      // Lógica para prender riego
+    });
+
+    document.getElementById('watering-manual-off').addEventListener('click', () => {
+      // Lógica para apagar riego
+    });
   </script>
 </body>
+
 </html>
