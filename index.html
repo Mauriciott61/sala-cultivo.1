@@ -222,6 +222,44 @@ onValue(estadoRef, (snapshot) => {
   document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
   document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
   document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
+  // Luces
+document.getElementById('lights-manual-on').addEventListener('click', function() {
+    // Lógica para encender las luces manualmente
+    estado.controles.luces = true;
+    document.getElementById('lights-status').textContent = 'Prendido';
+});
+
+document.getElementById('lights-manual-off').addEventListener('click', function() {
+    // Lógica para apagar las luces manualmente
+    estado.controles.luces = false;
+    document.getElementById('lights-status').textContent = 'Apagado';
+});
+
+// Humidificador
+document.getElementById('humidifier-manual-on').addEventListener('click', function() {
+    estado.controles.humidificador = true;
+    document.getElementById('humidifier-status').textContent = 'Prendido';
+});
+
+document.getElementById('humidifier-manual-off').addEventListener('click', function() {
+    estado.controles.humidificador = false;
+    document.getElementById('humidifier-status').textContent = 'Apagado';
+});
+
+// Extractor
+document.getElementById('extractor-on-time').addEventListener('change', function() {
+    // Lógica para actualizar el tiempo de encendido del extractor
+    const tiempo = this.value;
+    console.log(`Tiempo de encendido del extractor: ${tiempo}`);
+});
+
+// Riego
+document.getElementById('watering-time').addEventListener('change', function() {
+    // Lógica para actualizar el tiempo de riego
+    const tiempoRiego = this.value;
+    console.log(`Tiempo de riego: ${tiempoRiego}`);
+});
+
   
 });
 
