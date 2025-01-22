@@ -167,5 +167,111 @@
   <footer>
     <p>&copy; 2025 Sala de Cultivo</p>
   </footer>
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+  import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+    authDomain: "sala-cultivo.firebaseapp.com",
+    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+    projectId: "sala-cultivo",
+    storageBucket: "sala-cultivo.firebasestorage.app",
+    messagingSenderId: "388469961230",
+    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+    measurementId: "G-72JQD67R0X"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(app);
+
+  // Obtener datos actuales de la base de datos
+  function obtenerEstadoActual() {
+    const estadoRef = ref(db, 'estado_actual');
+    onValue(estadoRef, (snapshot) => {
+      const data = snapshot.val();
+      // Actualiza la interfaz de usuario con los datos
+      document.getElementById('temperature--span').textContent = data.sensores.temperatura || '--';
+      document.getElementById('humidity--span').textContent = data.sensores.humedad_ambiente || '--';
+      document.getElementById('dpv--span').textContent = data.sensores.deficit_presion_vapor || '--';
+      document.getElementById('soil-moisture--span').textContent = data.sensores.humedad_suelo || '--';
+      
+      document.getElementById('lights-status').textContent = data.controles.luces ? 'Prendidas' : 'Apagadas';
+      document.getElementById('humidifier-status').textContent = data.controles.humidificador ? 'Prendido' : 'Apagado';
+      document.getElementById('extractor-status').textContent = data.controles.extractor ? 'Prendido' : 'Apagado';
+      document.getElementById('watering-status').textContent = data.controles.bomba_riego ? 'Prendida' : 'Apagada';
+    });
+  }
+
+  // Actualizar los controles en Firebase
+  function actualizarControl(dispositivo, estado) {
+    const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
+    set(controlRef, estado)
+      .then(() => {
+        console.log(`${dispositivo} actualizado a ${estado}`);
+        // Agregar evento al historial
+        agregarEventoHistorial(dispositivo, estado);
+      })
+      .catch((error) => {
+        console.error("Error actualizando control:", error);
+      });
+  }
+
+  // Agregar evento al historial
+  function agregarEventoHistorial(dispositivo, estado) {
+    const eventosRef = ref(db, 'historial_eventos/eventos');
+    const evento = {
+      dispositivo: dispositivo,
+      responsable: "Usuario 1",  // Esto podría cambiar según el usuario actual
+      timestamp: new Date().toISOString(),
+      tipo: "cambio_control",
+      valor_actual: estado,
+      valor_anterior: estado === true ? false : true  // Cambio de estado
+    };
+    push(eventosRef, evento)
+      .then(() => {
+        console.log("Evento agregado al historial");
+      })
+      .catch((error) => {
+        console.error("Error agregando evento:", error);
+      });
+  }
+
+  // Actualizar controles manualmente (ejemplo para las luces)
+  document.getElementById('lights-manual-on').addEventListener('click', () => {
+    actualizarControl('luces', true);
+  });
+
+  document.getElementById('lights-manual-off').addEventListener('click', () => {
+    actualizarControl('luces', false);
+  });
+
+  // Lo mismo para el humidificador, extractor, etc.
+  document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+    actualizarControl('humidificador', true);
+  });
+
+  document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+    actualizarControl('humidificador', false);
+  });
+
+  document.getElementById('extractor-manual-on').addEventListener('click', () => {
+    actualizarControl('extractor', true);
+  });
+
+  document.getElementById('extractor-manual-off').addEventListener('click', () => {
+    actualizarControl('extractor', false);
+  });
+
+  // Cargar datos iniciales
+  obtenerEstadoActual();
+</script>
+
+  
 </body>
 </html>
