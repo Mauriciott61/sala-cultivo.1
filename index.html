@@ -93,65 +93,66 @@
     <!-- Control por Cuadrantes -->
     <div class="grid-container">
       <!-- Cuadrante 1 Luces -->
-      <section id="lights-control" class="quadrant">
-        <h2>Luces</h2>
-        <p>Estado: <span id="lights-status">Apagadas</span></p>
-        <button id="lights-manual-on">Modo Manual Prendido</button>
-        <button id="lights-manual-off">Modo Manual Apagado</button>
-        <button id="lights-timer-mode">Modo Manual Timer</button>
-        <h3>Configuración de Horas</h3>
-        <ul id="lights-schedule">
-          <li>Lunes <input type="number" id="monday-hours" placeholder="Horas"></li>
-          <li>Martes <input type="number" id="tuesday-hours" placeholder="Horas"></li>
-          <li>Miércoles <input type="number" id="wednesday-hours" placeholder="Horas"></li>
-          <li>Jueves <input type="number" id="thursday-hours" placeholder="Horas"></li>
-          <li>Viernes <input type="number" id="friday-hours" placeholder="Horas"></li>
-          <li>Sábado <input type="number" id="saturday-hours" placeholder="Horas"></li>
-          <li>Domingo <input type="number" id="sunday-hours" placeholder="Horas"></li>
-        </ul>
-      </section>
-
+     <section id="lights-control" class="quadrant">
+  <h2>Luces</h2>
+  <p>Estado: <span id="lights-status">Apagadas</span></p>
+  <button id="lights-manual-on">Modo Manual Prendido</button>
+  <button id="lights-manual-off">Modo Manual Apagado</button>
+  <button id="lights-timer-mode">Modo Manual Timer</button>
+  <h3>Configuración de Horas</h3>
+  <ul id="lights-schedule">
+    <li>Lunes <input type="number" id="monday-hours" placeholder="Horas"></li>
+    <li>Martes <input type="number" id="tuesday-hours" placeholder="Horas"></li>
+    <li>Miércoles <input type="number" id="wednesday-hours" placeholder="Horas"></li>
+    <li>Jueves <input type="number" id="thursday-hours" placeholder="Horas"></li>
+    <li>Viernes <input type="number" id="friday-hours" placeholder="Horas"></li>
+    <li>Sábado <input type="number" id="saturday-hours" placeholder="Horas"></li>
+    <li>Domingo <input type="number" id="sunday-hours" placeholder="Horas"></li>
+  </ul>
+</section>
       <!-- Cuadrante 2 Humidificador -->
-      <section id="humidifier-control" class="quadrant">
-        <h2>Humidificador</h2>
-        <p>Estado: <span id="humidifier-status">Prendido</span></p>
-        <button id="humidifier-manual-on">Modo Manual Prendido</button>
-        <button id="humidifier-manual-off">Modo Manual Apagado</button>
-        <button id="humidifier-config-mode">Modo Configurar</button>
-        <h3>Configuración DPV</h3>
-        <label for="dpv-min">Mínimo:</label>
-        <input type="number" id="dpv-min" placeholder="kPa">
-        <label for="dpv-max">Máximo:</label>
-        <input type="number" id="dpv-max" placeholder="kPa">
-      </section>
+     <section id="humidifier-control" class="quadrant">
+  <h2>Humidificador</h2>
+  <p>Estado: <span id="humidifier-status">Prendido</span></p>
+  <button id="humidifier-manual-on">Modo Manual Prendido</button>
+  <button id="humidifier-manual-off">Modo Manual Apagado</button>
+  <button id="humidifier-config-mode">Modo Configurar</button>
+  <h3>Configuración DPV</h3>
+  <label for="dpv-min">Mínimo:</label>
+  <input type="number" id="dpv-min" placeholder="kPa">
+  <label for="dpv-max">Máximo:</label>
+  <input type="number" id="dpv-max" placeholder="kPa">
+</section>
 
       <!-- Cuadrante 3 Extractor -->
       <section id="extractor-control" class="quadrant">
-        <h2>Extractor</h2>
-        <p>Estado: <span id="extractor-status">Prendido</span></p>
-        <h3>Configuración</h3>
-        <label for="extractor-on-time">Tiempo Prendido:</label>
-        <input type="number" id="extractor-on-time" placeholder="Segundos">
-        <label for="extractor-interval">Intervalo:</label>
-        <input type="number" id="extractor-interval" placeholder="Minutos">
-        <label for="extractor-humidity-limit">Humedad Máxima:</label>
-        <input type="number" id="extractor-humidity-limit" placeholder="%">
-      </section>
+  <h2>Extractor</h2>
+  <p>Estado: <span id="extractor-status">Prendido</span></p>
+  <h3>Configuración</h3>
+  <label for="extractor-on-time">Tiempo Prendido:</label>
+  <input type="number" id="extractor-on-time" placeholder="Segundos">
+  <label for="extractor-interval">Intervalo:</label>
+  <input type="number" id="extractor-interval" placeholder="Minutos">
+  <label for="extractor-humidity-limit">Humedad Máxima:</label>
+  <input type="number" id="extractor-humidity-limit" placeholder="%">
+</section>
+
 
       <!-- Cuadrante 4 Riego -->
       <section id="watering-control" class="quadrant">
-        <h2>Riego</h2>
-        <p>Estado: <span id="watering-status">Apagado</span></p>
-        <h3>Configuración</h3>
-        <label for="soil-moisture-min">Humedad Mínima:</label>
-        <input type="number" id="soil-moisture-min" placeholder="%">
-        <label for="watering-time">Tiempo de Riego:</label>
-        <input type="number" id="watering-time" placeholder="Segundos">
-        <label for="watering-interval">Intervalo:</label>
-        <input type="number" id="watering-interval" placeholder="Minutos">
-        <label for="soil-moisture-max">Humedad Máxima:</label>
-        <input type="number" id="soil-moisture-max" placeholder="%">
-      </section>
+  <h2>Riego</h2>
+  <p>Estado: <span id="watering-status">Apagado</span></p>
+  <h3>Configuración</h3>
+  <label for="soil-moisture-min">Humedad Mínima:</label>
+  <input type="number" id="soil-moisture-min" placeholder="%">
+  <label for="watering-time">Tiempo de Riego:</label>
+  <input type="number" id="watering-time" placeholder="Segundos">
+  <label for="watering-interval">Intervalo:</label>
+  <input type="number" id="watering-interval" placeholder="Minutos">
+  <label for="soil-moisture-max">Humedad Máxima:</label>
+  <input type="number" id="soil-moisture-max" placeholder="%">
+</section>
+
     </div>
 
     <!-- Estado Detallado -->
@@ -186,6 +187,63 @@
     // Importar las funciones necesarias desde los SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    // Funciones para controlar dispositivos manualmente
+document.getElementById('lights-manual-on').addEventListener('click', () => {
+  // Lógica para prender las luces
+  const lightsRef = ref(db, 'controles/luces');
+  set(lightsRef, 'Prendido'); // Actualiza el estado de las luces en Firebase
+  console.log('Luces Prendidas');
+});
+
+document.getElementById('lights-manual-off').addEventListener('click', () => {
+  // Lógica para apagar las luces
+  const lightsRef = ref(db, 'controles/luces');
+  set(lightsRef, 'Apagado'); // Actualiza el estado de las luces en Firebase
+  console.log('Luces Apagadas');
+});
+
+document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+  // Lógica para prender el humidificador
+  const humidifierRef = ref(db, 'controles/humidificador');
+  set(humidifierRef, 'Prendido'); // Actualiza el estado del humidificador en Firebase
+  console.log('Humidificador Prendido');
+});
+
+document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+  // Lógica para apagar el humidificador
+  const humidifierRef = ref(db, 'controles/humidificador');
+  set(humidifierRef, 'Apagado'); // Actualiza el estado del humidificador en Firebase
+  console.log('Humidificador Apagado');
+});
+
+document.getElementById('extractor-manual-on').addEventListener('click', () => {
+  // Lógica para prender el extractor
+  const extractorRef = ref(db, 'controles/extractor');
+  set(extractorRef, 'Prendido'); // Actualiza el estado del extractor en Firebase
+  console.log('Extractor Prendido');
+});
+
+document.getElementById('extractor-manual-off').addEventListener('click', () => {
+  // Lógica para apagar el extractor
+  const extractorRef = ref(db, 'controles/extractor');
+  set(extractorRef, 'Apagado'); // Actualiza el estado del extractor en Firebase
+  console.log('Extractor Apagado');
+});
+
+document.getElementById('watering-manual-on').addEventListener('click', () => {
+  // Lógica para prender el riego
+  const wateringRef = ref(db, 'controles/riego');
+  set(wateringRef, 'Prendido'); // Actualiza el estado del riego en Firebase
+  console.log('Riego Prendido');
+});
+
+document.getElementById('watering-manual-off').addEventListener('click', () => {
+  // Lógica para apagar el riego
+  const wateringRef = ref(db, 'controles/riego');
+  set(wateringRef, 'Apagado'); // Actualiza el estado del riego en Firebase
+  console.log('Riego Apagado');
+});
+
 
     // Configuración de Firebase
     const firebaseConfig = {
