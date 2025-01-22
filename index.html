@@ -1,287 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sala de Cultivo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      color: #333;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Cultivo</title>
+    <style>
+        /* Tus estilos CSS */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
 
-    header {
-      background-color: #4caf50;
-      color: white;
-      text-align: center;
-      padding: 1em 0;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
+        header {
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
 
-    header h1 {
-      font-size: 2.5em;
-      margin: 0;
-    }
+        header h1 {
+            font-size: 2.5em;
+            margin: 0;
+        }
 
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      padding: 20px;
-    }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
 
-    .quadrant {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
+        .quadrant {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
 
-    button {
-      display: block;
-      width: 100%;
-      padding: 0.75em;
-      margin: 0.5em 0;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
+        button {
+            display: block;
+            width: 100%;
+            padding: 0.75em;
+            margin: 0.5em 0;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
 
-    button:hover {
-      background-color: #45a049;
-    }
+        button:hover {
+            background-color: #45a049;
+        }
 
-    input[type="number"], input[type="text"] {
-      width: 100%;
-      padding: 0.75em;
-      margin: 0.5em 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.75em;
+            margin: 0.5em 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-    footer {
-      text-align: center;
-      padding: 1em 0;
-      background-color: #4caf50;
-      color: white;
-      margin-top: 2em;
-    }
-  </style>
+        footer {
+            text-align: center;
+            padding: 1em 0;
+            background-color: #4caf50;
+            color: white;
+            margin-top: 2em;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Sala de Cultivo</h1>
-  </header>
+    <header>
+        <h1>Sala de Cultivo</h1>
+    </header>
 
-  
-    <!-- Datos en Tiempo Real -->
-    <section id="realtime-data" class="center-section">
-      <h2>Datos Actuales</h2>
-      <p>Temperatura: <span id="temperature--span">--</span> °C</p>
-      <p>Humedad Ambiente: <span id="humidity--span">--</span> %</p>
-      <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
-      <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
-   
-
-    <!-- Control por Cuadrantes -->
-  <main>
-    <div class="grid-container">
-        <section id="lights-control" class="quadrant">
-            <h2>Luces</h2>
-            <p>Estado: <span id="lights-status">Apagadas</span></p>
-            <button id="lights-manual-on">Modo Manual Prendido</button>
-            <button id="lights-manual-off">Modo Manual Apagado</button>
-            <button id="lights-timer-mode">Modo Manual Timer</button>
-            <h3>Configuración de Horas</h3>
-            <ul id="lights-schedule">
-                <li>Lunes: <input type="number" id="monday-hours" placeholder="Horas"></li>
-                <li>Martes: <input type="number" id="tuesday-hours" placeholder="Horas"></li>
-                <li>Miércoles: <input type="number" id="wednesday-hours" placeholder="Horas"></li>
-                <li>Jueves: <input type="number" id="thursday-hours" placeholder="Horas"></li>
-                <li>Viernes: <input type="number" id="friday-hours" placeholder="Horas"></li>
-                <li>Sábado: <input type="number" id="saturday-hours" placeholder="Horas"></li>
-                <li>Domingo: <input type="number" id="sunday-hours" placeholder="Horas"></li>
-            </ul>
+    <main>
+        <section id="realtime-data" class="center-section">
+            <h2>Datos Actuales</h2>
+            <p>Temperatura: <span id="temperature--span">--</span> °C</p>
+            <p>Humedad Ambiente: <span id="humidity--span">--</span> %</p>
+            <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
+            <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
         </section>
 
-        <section id="humidifier-control" class="quadrant">
-            <h2>Humidificador</h2>
-            <p>Estado: <span id="humidifier-status">Apagado</span></p>
-            <button id="humidifier-manual-on">Modo Manual Prendido</button>
-            <button id="humidifier-manual-off">Modo Manual Apagado</button>
-            <button id="humidifier-config-mode">Modo Configurar</button>
-            <h3>Configuración DPV</h3>
-            <label for="dpv-min">Mínimo:</label>
-            <input type="number" id="dpv-min" placeholder="kPa">
-            <label for="dpv-max">Máximo:</label>
-            <input type="number" id="dpv-max" placeholder="kPa">
+        <div class="grid-container">
+            <section id="lights-control" class="quadrant">
+                <h2>Luces</h2>
+                <p>Estado: <span id="lights-status">Apagadas</span></p>
+                <button id="lights-manual-on">Modo Manual Prendido</button>
+                <button id="lights-manual-off">Modo Manual Apagado</button>
+                <button id="lights-timer-mode">Modo Manual Timer</button>
+                <h3>Configuración de Horas</h3>
+                <ul id="lights-schedule">
+                    <li>Lunes: <input type="number" id="monday-hours" placeholder="Horas"></li>
+                    <li>Martes: <input type="number" id="tuesday-hours" placeholder="Horas"></li>
+                    <li>Miércoles: <input type="number" id="wednesday-hours" placeholder="Horas"></li>
+                    <li>Jueves: <input type="number" id="thursday-hours" placeholder="Horas"></li>
+                    <li>Viernes: <input type="number" id="friday-hours" placeholder="Horas"></li>
+                    <li>Sábado: <input type="number" id="saturday-hours" placeholder="Horas"></li>
+                    <li>Domingo: <input type="number" id="sunday-hours" placeholder="Horas"></li>
+                </ul>
+            </section>
+
+            <section id="humidifier-control" class="quadrant">
+                <h2>Humidificador</h2>
+                <p>Estado: <span id="humidifier-status">Apagado</span></p>
+                <button id="humidifier-manual-on">Modo Manual Prendido</button>
+                <button id="humidifier-manual-off">Modo Manual Apagado</button>
+                <button id="humidifier-config-mode">Modo Configurar</button>
+                <h3>Configuración DPV</h3>
+                <label for="dpv-min">Mínimo:</label>
+                <input type="number" id="dpv-min" placeholder="kPa">
+                <label for="dpv-max">Máximo:</label>
+                <input type="number" id="dpv-max" placeholder="kPa">
+            </section>
+
+            <section id="extractor-control" class="quadrant">
+                <h2>Extractor</h2>
+                <p>Estado: <span id="extractor-status">Apagado</span></p>
+                <button id="extractor-manual-on">Modo Manual Prendido</button>
+                <label for="extractor-on-time">Tiempo Prendido:</label>
+                <input type="number" id="extractor-on-time" placeholder="Segundos">
+                <label for="extractor-interval">Intervalo:</label>
+                <input type="number" id="extractor-interval" placeholder="Minutos">
+                <label for="extractor-humidity-limit">Humedad Máxima:</label>
+                <input type="number" id="extractor-humidity-limit" placeholder="%">
+            </section>
+
+            <section id="watering-control" class="quadrant">
+                <h2>Riego</h2>
+                <p>Estado: <span id="watering-status">Apagado</span></p>
+                <h3>Configuración</h3>
+                <label for="soil-moisture-min">Humedad Mínima:</label>
+                <input type="number" id="soil-moisture-min" placeholder="%">
+                <label for="watering-time">Tiempo de Riego:</label>
+                <input type="number" id="watering-time" placeholder="Segundos">
+                <label for="watering-interval">Intervalo:</label>
+                <input type="number" id="watering-interval" placeholder="Minutos">
+                <label for="soil-moisture-max">Humedad Máxima:</label>
+                <input type="number" id="soil-moisture-max" placeholder="%">
+            </section>
+                <section id="ventilador-control" class="quadrant">
+                <h2>Ventilador</h2>
+                <p>Estado: <span id="ventilador-status">Apagado</span></p>
+                <button id="ventilador-manual-on">Modo Manual Prendido</button>
+            </section>
+        </div>
+
+        <section id="detailed-status">
+            <h2>Estado Detallado</h2>
+            <p>Luces: <span id="lights-runtime--span">--</span> horas prendidas.</p>
+            <p>Humidificador: <span id="humidifier-runtime--span">--</span> horas prendido.</p>
+            <p>Extractor: <span id="extractor-runtime--span">--</span> ciclos completados.</p>
+            <p>Riego: <span id="watering-runtime--span">--</span> ciclos completados.</p>
+            <p>Ventilador: <span id="ventilador-runtime--span">--</span> ciclos completados.</p>
         </section>
+    </main>
 
-        <section id="extractor-control" class="quadrant">
-            <h2>Extractor</h2>
-            <p>Estado: <span id="extractor-status">Apagado</span></p>
-            <button id="extractor-manual-on">Modo Manual Prendido</button> <--- ¡Asegúrate de que este botón esté aquí!
-            <h3>Configuración</h3>
-            <label for="extractor-on-time">Tiempo Prendido:</label>
-            <input type="number" id="extractor-on-time" placeholder="Segundos">
-            <label for="extractor-interval">Intervalo:</label>
-            <input type="number" id="extractor-interval" placeholder="Minutos">
-            <label for="extractor-humidity-limit">Humedad Máxima:</label>
-            <input type="number" id="extractor-humidity-limit" placeholder="%">
-        </section>
-
-        <section id="watering-control" class="quadrant">
-            <h2>Riego</h2>
-            <p>Estado: <span id="watering-status">Apagado</span></p>
-            <h3>Configuración</h3>
-            <label for="soil-moisture-min">Humedad Mínima:</label>
-            <input type="number" id="soil-moisture-min" placeholder="%">
-            <label for="watering-time">Tiempo de Riego:</label>
-            <input type="number" id="watering-time" placeholder="Segundos">
-            <label for="watering-interval">Intervalo:</label>
-            <input type="number" id="watering-interval" placeholder="Minutos">
-            <label for="soil-moisture-max">Humedad Máxima:</label>
-            <input type="number" id="soil-moisture-max" placeholder="%">
-        </section>
-    
-    </div>
-
-    <!-- Estado Detallado -->
-    <section id="detailed-status">
-      <h2>Estado Detallado</h2>
-      <p>Luces: <span id="lights-runtime--span">--</span> horas prendidas.</p>
-      <p>Humidificador: <span id="humidifier-runtime--span">--</span> horas prendido.</p>
-      <p>Extractor: <span id="extractor-runtime--span">--</span> ciclos completados.</p>
-      <p>Riego: <span id="watering-runtime--span">--</span> ciclos completados.</p>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Sala de Cultivo</p>
-  </footer>
-
-
+    <footer>
+        <p>&copy; 2025 Sala de Cultivo</p>
+    </footer>
     <script type="module">
-      // Importaciones de Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-    import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+     // Importaciones de Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-    // Configuración de Firebase (¡REVISA QUE ESTÉ CORRECTA!)
-    const firebaseConfig = {
-        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk", // Reemplaza con tu API Key
-        authDomain: "sala-cultivo.firebaseapp.com",
-        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-        projectId: "sala-cultivo",
-        storageBucket: "sala-cultivo.firebasestorage.app",
-        messagingSenderId: "388469961230",
-        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-        measurementId: "G-72JQD67R0X"
-    };
+// Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
+const firebaseConfig = {
+    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk", // Reemplaza con tu API Key
+    authDomain: "sala-cultivo.firebaseapp.com",
+    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+    projectId: "sala-cultivo",
+    storageBucket: "sala-cultivo.firebasestorage.app",
+    messagingSenderId: "388469961230",
+    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+    measurementId: "G-72JQD67R0X"
+};
 
-    // Inicialización de Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getDatabase(app);
+// Inicialización de Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getDatabase(app);
 
-    function obtenerEstadoActual() {
-        const estadoRef = ref(db, 'estado_actual/controles');
-        onValue(estadoRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
-                document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
-                document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
-                document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado'; // Actualiza el estado del riego
-                document.getElementById('ventilador-status').textContent = data.ventilador ? 'Prendido' : 'Apagado'; // Actualiza el estado del ventilador
-            } else {
-                console.log("No hay datos en estado_actual/controles");
-            }
-        });
-    }
-
-    function actualizarControl(dispositivo, estado) {
-        if (!db) {
-            console.error("Error: db no está inicializado.");
-            return Promise.reject("db no está inicializado.");
+function obtenerEstadoActual() {
+    const estadoRef = ref(db, 'estado_actual/controles');
+    onValue(estadoRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
+            document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
+            document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
+            document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
+            document.getElementById('ventilador-status').textContent = data.ventilador ? 'Prendido' : 'Apagado';
+        } else {
+            console.log("No hay datos en estado_actual/controles");
         }
-
-        const controlRef = ref(db, 'estado_actual/controles/' + dispositivo); // ¡RUTA CORRECTA!
-        console.log("Referencia de Firebase:", controlRef);
-
-        return set(controlRef, estado) // ¡DEVOLVER LA PROMESA ES CRUCIAL!
-            .then(() => {
-                console.log(`${dispositivo} actualizado a ${estado}`);
-                agregarEventoHistorial(dispositivo, estado);
-            })
-            .catch((error) => {
-                console.error("Error actualizando control:", error);
-                throw error; // Re-lanza el error
-            });
-    }
-
-    function agregarEventoHistorial(dispositivo, estado) {
-        const eventosRef = ref(db, 'historial_eventos/eventos');
-        const evento = {
-            dispositivo: dispositivo,
-            responsable: "Usuario 1",
-            timestamp: new Date().toISOString(),
-            tipo: "cambio_control",
-            valor_actual: estado,
-            valor_anterior: estado === true ? false : true
-        };
-        push(eventosRef, evento)
-            .then(() => {
-                console.log("Evento agregado al historial");
-            })
-            .catch((error) => {
-                console.error("Error agregando evento:", error);
-            });
-    }
-
-    function addControlListener(buttonId, controlName, state) {
-        const button = document.getElementById(buttonId);
-        console.log("Buscando botón con ID:", buttonId);
-        if (!button) {
-            console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
-            return; // Importante: salir de la función si el botón no se encuentra
-        }
-        console.log("Botón encontrado:", button);
-        console.log("Añadiendo event listener al botón:", buttonId);
-
-        button.addEventListener('click', () => {
-            console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
-            actualizarControl(controlName, state)
-                .then(() => {
-                    console.log("Operación completada con éxito.");
-                })
-                .catch((error) => {
-                    console.error("Error en la operación:", error);
-                });
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOMContentLoaded disparado. El DOM está listo.");
-
-        addControlListener('lights-manual-on', 'luces', true);
-        addControlListener('lights-manual-off', 'luces', false);
-        addControlListener('humidifier-manual-on', 'humidificador', true);
-        addControlListener('humidifier-manual-off', 'humidificador', false);
-        addControlListener('extractor-manual-on', 'extractor', true);
-        // Agrega los listeners para los botones de riego y ventilador
-        addControlListener('watering-manual-on', 'bomba_riego', true);
-        addControlListener('ventilador-manual-on', 'ventilador', true);
     });
+}
 
-    obtenerEstadoActual(); // Llama a la función para obtener el estado inicial
+function actualizarControl(dispositivo, estado) {
+    if (!db) {
+        console.error("Error: db no está inicializado.");
+        return Promise.reject("db no está inicializado.");
+    }
+
+    const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
+    console.log("Referencia de Firebase:", controlRef);
+
+    return set(controlRef, estado)
+        .then(() => {
+            console.log(`${dispositivo} actualizado a ${estado}`);
+            agregarEventoHistorial(dispositivo, estado);
+        })
+        .catch((error) => {
+            console.error("Error actualizando control:", error);
+            throw error;
+        });
+}
+
+function agregarEventoHistorial(dispositivo, estado) {
+    const eventosRef = ref(db, 'historial_eventos/eventos');
+    const evento = {
+        dispositivo: dispositivo,
+        responsable: "Usuario 1",
+        timestamp: new Date().toISOString(),
+        tipo: "cambio_control",
+        valor_actual: estado,
+        valor_anterior: estado === true ? false : true
+    };
+    push(eventosRef, evento)
+        .then(() => {
+            console.log("Evento agregado al historial");
+        })
+        .catch((error) => {
+            console.error("Error agregando evento:", error);
+        });
+}
+
+function addControlListener(buttonId, controlName, state) {
+    const button = document.getElementById(buttonId);
+    console.log("Buscando botón con ID:", buttonId);
+    if (!button) {
+        console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
+        return;
+    }
+    console.log("Botón encontrado:", button);
+    console.log("Añadiendo event listener al botón:", buttonId);
+
+    button.addEventListener('click', () => {
+        console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
+        actualizarControl(controlName, state)
+            .then(() => {
+                console.log("Operación completada con éxito.");
+            })
+            .catch((error) => {
+                console.error("Error en la operación:", error);
+            });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded disparado. El DOM está listo.");
+
+    addControlListener('lights-manual-on', 'luces', true);
+    addControlListener('lights-manual-off', 'luces', false);
+    addControlListener('humidifier-manual-on', 'humidificador', true);
+    addControlListener('humidifier-manual-off', 'humidificador', false);
+    addControlListener('extractor-manual-on', 'extractor', true);
+    addControlListener('watering-manual-on', 'bomba_riego', true);
+    addControlListener('ventilador-manual-on', 'ventilador', true);
+});
+
+obtenerEstadoActual();
     </script>
 
   
