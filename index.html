@@ -241,7 +241,9 @@
         console.error("Error agregando evento:", error);
       });
   }
-
+// Event listeners - **CORRECCIÓN PRINCIPAL**
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM cargado'); // Para verificar en la consola
   // Actualizar controles manualmente (ejemplo para las luces)
   document.getElementById('lights-manual-on').addEventListener('click', () => {
     actualizarControl('luces', true);
