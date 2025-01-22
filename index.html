@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala de Cultivo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1 class="centered-title">Sala de Cultivo</h1>
+  </header>
+
+  <main>
+    <!-- Datos en Tiempo Real -->
+    <section id="realtime-data" class="center-section">
+      <h2>Datos Actuales</h2>
+      <p>Temperatura: <span id="temperature">--</span>°C</p>
+      <p>Humedad Ambiente: <span id="humidity">--</span>%</p>
+      <p>Déficit de Presión de Vapor: <span id="dpv">--</span> kPa</p>
+      <p>Humedad del Suelo: <span id="soil-moisture">--</span>%</p>
+    </section>
+
+    <!-- Control por Cuadrantes -->
+    <div class="grid-container">
+      <!-- Cuadrante 1: Luces -->
+      <section id="lights-control" class="quadrant">
+        <h2>Luces</h2>
+        <p>Estado: <span id="lights-status">Apagadas</span></p>
+        <button id="lights-manual-on">Modo Manual Prendido</button>
+        <button id="lights-manual-off">Modo Manual Apagado</button>
+        <button id="lights-timer-mode">Modo Manual Timer</button>
+        <h3>Configuración de Horas</h3>
+        <ul id="lights-schedule">
+          <li>Lunes: <input type="number" id="monday-hours" placeholder="Horas"></li>
+          <li>Martes: <input type="number" id="tuesday-hours" placeholder="Horas"></li>
+          <li>Miércoles: <input type="number" id="wednesday-hours" placeholder="Horas"></li>
+          <li>Jueves: <input type="number" id="thursday-hours" placeholder="Horas"></li>
+          <li>Viernes: <input type="number" id="friday-hours" placeholder="Horas"></li>
+          <li>Sábado: <input type="number" id="saturday-hours" placeholder="Horas"></li>
+          <li>Domingo: <input type="number" id="sunday-hours" placeholder="Horas"></li>
+        </ul>
+      </section>
+
+      <!-- Cuadrante 2: Humidificador -->
+      <section id="humidifier-control" class="quadrant">
+        <h2>Humidificador</h2>
+        <p>Estado: <span id="humidifier-status">Apagado</span></p>
+        <button id="humidifier-manual-on">Modo Manual Prendido</button>
+        <button id="humidifier-manual-off">Modo Manual Apagado</button>
+        <button id="humidifier-config-mode">Modo Configurar</button>
+        <h3>Configuración DPV</h3>
+        <label for="dpv-min">Mínimo:</label>
+        <input type="number" id="dpv-min" placeholder="kPa">
+        <label for="dpv-max">Máximo:</label>
+        <input type="number" id="dpv-max" placeholder="kPa">
+      </section>
+
+      <!-- Cuadrante 3: Extractor -->
+      <section id="extractor-control" class="quadrant">
+        <h2>Extractor</h2>
+        <p>Estado: <span id="extractor-status">Apagado</span></p>
+        <h3>Configuración</h3>
+        <label for="extractor-on-time">Tiempo Prendido:</label>
+        <input type="number" id="extractor-on-time" placeholder="Segundos">
+        <label for="extractor-interval">Intervalo:</label>
+        <input type="number" id="extractor-interval" placeholder="Minutos">
+        <label for="extractor-humidity-limit">Humedad Máxima:</label>
+        <input type="number" id="extractor-humidity-limit" placeholder="%">
+      </section>
+
+      <!-- Cuadrante 4: Riego -->
+      <section id="watering-control" class="quadrant">
+        <h2>Riego</h2>
+        <p>Estado: <span id="watering-status">Apagado</span></p>
+        <h3>Configuración</h3>
+        <label for="soil-moisture-min">Humedad Mínima:</label>
+        <input type="number" id="soil-moisture-min" placeholder="%">
+        <label for="watering-time">Tiempo de Riego:</label>
+        <input type="number" id="watering-time" placeholder="Segundos">
+        <label for="watering-interval">Intervalo:</label>
+        <input type="number" id="watering-interval" placeholder="Minutos">
+        <label for="soil-moisture-max">Humedad Máxima:</label>
+        <input type="number" id="soil-moisture-max" placeholder="%">
+      </section>
+    </div>
+
+    <!-- Estado Detallado -->
+    <section id="detailed-status">
+      <h2>Estado Detallado</h2>
+      <p>Luces: <span id="lights-runtime">--</span> horas prendidas.</p>
+      <p>Humidificador: <span id="humidifier-runtime">--</span> horas prendido.</p>
+      <p>Extractor: <span id="extractor-runtime">--</span> ciclos completados.</p>
+      <p>Riego: <span id="watering-runtime">--</span> ciclos completados.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Sala de Cultivo</p>
+  </footer>
+</body>
+</html>
