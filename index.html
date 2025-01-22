@@ -188,51 +188,51 @@
   };
   
   // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-  // Obtener referencia a los datos de la sala
-  const estadoRef = ref(db, 'estado_actual');
-  const historialRef = ref(db, 'historial_eventos');
-  const usuariosRef = ref(db, 'usuarios');
+// Obtener referencia a los datos de la sala
+const estadoRef = ref(db, 'estado_actual');
+const historialRef = ref(db, 'historial_eventos');
+const usuariosRef = ref(db, 'usuarios');
+
+// Escuchar cambios en la base de datos en tiempo real
+onValue(estadoRef, (snapshot) => {
+  const estado = snapshot.val();
   
-  // Escuchar cambios en la base de datos en tiempo real
-  onValue(estadoRef, (snapshot) => {
-    const estado = snapshot.val();
-    
-    // Sensores
-    document.getElementById('temperature--span').textContent = estado.sensores.temperatura || '--';
-    document.getElementById('humidity--span').textContent = estado.sensores.humedad_ambiente || '--';
-    document.getElementById('dpv--span').textContent = estado.sensores.deficit_presion_vapor || '--';
-    document.getElementById('soil-moisture--span').textContent = estado.sensores.humedad_suelo || '--';
+  // Sensores
+  document.getElementById('temperature--span').textContent = estado.sensores.temperatura || '--';
+  document.getElementById('humidity--span').textContent = estado.sensores.humedad_ambiente || '--';
+  document.getElementById('dpv--span').textContent = estado.sensores.deficit_presion_vapor || '--';
+  document.getElementById('soil-moisture--span').textContent = estado.sensores.humedad_suelo || '--';
 
-    // Controles
-    document.getElementById('lights-status').textContent = estado.controles.luces ? 'Prendido' : 'Apagado';
-    document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
-    document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
-    document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
-    document.getElementById('fan-status').textContent = estado.controles.ventilador ? 'Prendido' : 'Apagado';
+  // Controles
+  document.getElementById('lights-status').textContent = estado.controles.luces ? 'Prendido' : 'Apagado';
+  document.getElementById('humidifier-status').textContent = estado.controles.humidificador ? 'Prendido' : 'Apagado';
+  document.getElementById('extractor-status').textContent = estado.controles.extractor ? 'Prendido' : 'Apagado';
+  document.getElementById('watering-status').textContent = estado.controles.bomba_riego ? 'Prendido' : 'Apagado';
+  document.getElementById('fan-status').textContent = estado.controles.ventilador ? 'Prendido' : 'Apagado';
+});
+
+// Escuchar historial de eventos
+onValue(historialRef, (snapshot) => {
+  const eventos = snapshot.val().eventos || [];
+  const eventosList = document.getElementById('eventos-list');
+  eventosList.innerHTML = ''; // Limpiar eventos anteriores
+  eventos.forEach(evento => {
+    const eventoElement = document.createElement('li');
+    eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
+    eventosList.appendChild(eventoElement);
   });
+});
 
-  // Escuchar historial de eventos
-  onValue(historialRef, (snapshot) => {
-    const eventos = snapshot.val().eventos || [];
-    const eventosList = document.getElementById('eventos-list');
-    eventosList.innerHTML = ''; // Limpiar eventos anteriores
-    eventos.forEach(evento => {
-      const eventoElement = document.createElement('li');
-      eventoElement.textContent = `${evento.timestamp} - ${evento.dispositivo || evento.sensor} ${evento.tipo} (Valor anterior: ${evento.valor_anterior || 'N/A'}, Valor actual: ${evento.valor_actual || evento.valor})`;
-      eventosList.appendChild(eventoElement);
-    });
-  });
-
-  // Escuchar cambios en los usuarios
-  onValue(usuariosRef, (snapshot) => {
-    const usuario = snapshot.val()['Usuario_1'];
-    if (usuario) {
-      document.getElementById('usuario-nombre').textContent = usuario.nombre;
-      document.getElementById('usuario-rol').textContent = usuario.rol;
-      document.getElementById('usuario-ultimo-acceso').textContent = new Date(usuario.ultimo_acceso).toLocaleString();
+// Escuchar cambios en los usuarios
+onValue(usuariosRef, (snapshot) => {
+  const usuario = snapshot.val()['Usuario_1'];
+  if (usuario) {
+    document.getElementById('usuario-nombre').textContent = usuario.nombre;
+    document.getElementById('usuario-rol').textContent = usuario.rol;
+    document.getElementById('usuario-ultimo-acceso').textContent = new Date(usuario.ultimo_acceso).toLocaleString();
     }
   });
 
