@@ -167,106 +167,81 @@
     <p>&copy; 2025 Sala de Cultivo</p>
   </footer>
   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-  import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    </head>
+<body>
+    <header>
+        <h1>Sala de Cultivo</h1>
+    </header>
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-    authDomain: "sala-cultivo.firebaseapp.com",
-    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-    projectId: "sala-cultivo",
-    storageBucket: "sala-cultivo.firebasestorage.app",
-    messagingSenderId: "388469961230",
-    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-    measurementId: "G-72JQD67R0X"
-  };
+    <main>
+        </main>
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getDatabase(app);
+    <footer>
+        <p>&copy; 2025 Sala de Cultivo</p>
+    </footer>
 
-  // ... resto del código de event listeners
+    <script type="module">
+        // Importaciones de Firebase (sin cambios)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+        import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-  // Obtener datos actuales de la base de datos
-  function obtenerEstadoActual() {
-    const estadoRef = ref(db, 'estado_actual');
-    onValue(estadoRef, (snapshot) => {
-      const data = snapshot.val();
-      // Actualiza la interfaz de usuario con los datos
-      document.getElementById('temperature--span').textContent = data.sensores.temperatura || '--';
-      document.getElementById('humidity--span').textContent = data.sensores.humedad_ambiente || '--';
-      document.getElementById('dpv--span').textContent = data.sensores.deficit_presion_vapor || '--';
-      document.getElementById('soil-moisture--span').textContent = data.sensores.humedad_suelo || '--';
-      
-      document.getElementById('lights-status').textContent = data.controles.luces ? 'Prendidas' : 'Apagadas';
-      document.getElementById('humidifier-status').textContent = data.controles.humidificador ? 'Prendido' : 'Apagado';
-      document.getElementById('extractor-status').textContent = data.controles.extractor ? 'Prendido' : 'Apagado';
-      document.getElementById('watering-status').textContent = data.controles.bomba_riego ? 'Prendida' : 'Apagada';
-    });
-  }
+        // Configuración de Firebase (sin cambios)
+        const firebaseConfig = {
+            // ...
+        };
 
-  // Actualizar los controles en Firebase
-  function actualizarControl(dispositivo, estado) {
-    const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
-    set(controlRef, estado)
-      .then(() => {
-        console.log(`${dispositivo} actualizado a ${estado}`);
-        // Agregar evento al historial
-        agregarEventoHistorial(dispositivo, estado);
-      })
-      .catch((error) => {
-        console.error("Error actualizando control:", error);
-      });
-  }
+        // Inicialización de Firebase (sin cambios)
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getDatabase(app);
 
-  // Agregar evento al historial
-  function agregarEventoHistorial(dispositivo, estado) {
-    const eventosRef = ref(db, 'historial_eventos/eventos');
-    const evento = {
-      dispositivo: dispositivo,
-      responsable: "Usuario 1",  // Esto podría cambiar según el usuario actual
-      timestamp: new Date().toISOString(),
-      tipo: "cambio_control",
-      valor_actual: estado,
-      valor_anterior: estado === true ? false : true  // Cambio de estado
-    };
-    push(eventosRef, evento)
-      .then(() => {
-        console.log("Evento agregado al historial");
-      })
-      .catch((error) => {
-        console.error("Error agregando evento:", error);
-      });
-  }
- function addControlListener(buttonId, controlName, state) {
-    const button = document.getElementById(buttonId);
-    console.log("Buscando botón con ID:", buttonId);
-    if (!button) {
-        console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
-        console.log("El botón es:", button);
-        return;
-    }
-    console.log("Botón encontrado:", button);
-    console.log("Añadiendo event listener al botón:", buttonId); // Mensaje importante
-    button.addEventListener('click', () => {
-        console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
-        actualizarControl(controlName, state)
-            .then(() => {
-                console.log("Operación completada con éxito.");
-            })
-            .catch((error) => {
-                console.error("Error en la operación:", error);
+        // Funciones (obtenerEstadoActual, actualizarControl, agregarEventoHistorial) (sin cambios)
+        function obtenerEstadoActual() { /* ... */ }
+        function actualizarControl(dispositivo, estado) { /* ... */ }
+        function agregarEventoHistorial(dispositivo, estado) { /* ... */ }
+
+        // Función addControlListener (sin cambios)
+        function addControlListener(buttonId, controlName, state) {
+            const button = document.getElementById(buttonId);
+            console.log("Buscando botón con ID:", buttonId);
+            if (!button) {
+                console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
+                console.log("El botón es:", button);
+                return;
+            }
+            console.log("Botón encontrado:", button);
+            console.log("Añadiendo event listener al botón:", buttonId); // Mensaje importante
+            button.addEventListener('click', () => {
+                console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
+                actualizarControl(controlName, state)
+                    .then(() => {
+                        console.log("Operación completada con éxito.");
+                    })
+                    .catch((error) => {
+                        console.error("Error en la operación:", error);
+                    });
             });
-    });
-}
+        }
 
-  // Cargar datos iniciales
-  obtenerEstadoActual();
-</script>
+        // ***¡ESTO ES LO QUE FALTABA!***
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOMContentLoaded disparado. El DOM está listo."); // Mensaje de confirmación
+
+            addControlListener('lights-manual-on', 'luces', true);
+            addControlListener('lights-manual-off', 'luces', false);
+            addControlListener('humidifier-manual-on', 'humidificador', true);
+            addControlListener('humidifier-manual-off', 'humidificador', false);
+            addControlListener('extractor-manual-on', 'extractor', true);
+            // ... llamadas a addControlListener para otros botones
+        });
+
+        // Cargar datos iniciales (sin cambios)
+        obtenerEstadoActual();
+    </script>
 
   
 </body>
