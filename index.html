@@ -1,171 +1,171 @@
-!DOCTYPE html
-html lang=en
-head
-  meta charset=UTF-8
-  meta name=viewport content=width=device-width, initial-scale=1.0
-  titleSala de Cultivotitle
-  style
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sala de Cultivo</title>
+  <style>
     body {
-      font-family Arial, sans-serif;
-      margin 0;
-      padding 0;
-      background-color #f4f4f9;
-      color #333;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
     }
 
     header {
-      background-color #4caf50;
-      color white;
-      text-align center;
-      padding 1em 0;
-      box-shadow 0 2px 5px rgba(0, 0, 0, 0.2);
+      background-color: #4caf50;
+      color: white;
+      text-align: center;
+      padding: 1em 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
     header h1 {
-      font-size 2.5em;
-      margin 0;
+      font-size: 2.5em;
+      margin: 0;
     }
 
     .grid-container {
-      display grid;
-      grid-template-columns repeat(2, 1fr);
-      gap 20px;
-      padding 20px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      padding: 20px;
     }
 
     .quadrant {
-      background-color white;
-      padding 20px;
-      border-radius 8px;
-      box-shadow 0 2px 5px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     button {
-      display block;
-      width 100%;
-      padding 0.75em;
-      margin 0.5em 0;
-      background-color #4caf50;
-      color white;
-      border none;
-      border-radius 4px;
-      font-size 1em;
-      cursor pointer;
-      transition background-color 0.3s;
+      display: block;
+      width: 100%;
+      padding: 0.75em;
+      margin: 0.5em 0;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s;
     }
 
-    buttonhover {
-      background-color #45a049;
+    button:hover {
+      background-color: #45a049;
     }
 
-    input[type=number], input[type=text] {
-      width 100%;
-      padding 0.75em;
-      margin 0.5em 0;
-      border 1px solid #ccc;
-      border-radius 4px;
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 0.75em;
+      margin: 0.5em 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
     footer {
-      text-align center;
-      padding 1em 0;
-      background-color #4caf50;
-      color white;
-      margin-top 2em;
+      text-align: center;
+      padding: 1em 0;
+      background-color: #4caf50;
+      color: white;
+      margin-top: 2em;
     }
-  style
-head
-body
-  header
-    h1 class=centered-titleSala de Cultivoh1
-  header
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sala de Cultivo</h1>
+  </header>
 
-  main
-    !-- Datos en Tiempo Real --
-    section id=realtime-data class=center-section
-      h2Datos Actualesh2
-      pTemperatura span id=temperature--span°Cp
-      pHumedad Ambiente span id=humidity--span%p
-      pDéficit de Presión de Vapor span id=dpv--span kPap
-      pHumedad del Suelo span id=soil-moisture--span%p
-    section
+  <main>
+    <!-- Datos en Tiempo Real -->
+    <section id="realtime-data" class="center-section">
+      <h2>Datos Actuales</h2>
+      <p>Temperatura: <span id="temperature--span">--</span> °C</p>
+      <p>Humedad Ambiente: <span id="humidity--span">--</span> %</p>
+      <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
+      <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
+    </section>
 
-    !-- Control por Cuadrantes --
-    div class=grid-container
-      !-- Cuadrante 1 Luces --
-      section id=lights-control class=quadrant
-        h2Lucesh2
-        pEstado span id=lights-statusApagadasspanp
-        button id=lights-manual-onModo Manual Prendidobutton
-        button id=lights-manual-offModo Manual Apagadobutton
-        button id=lights-timer-modeModo Manual Timerbutton
-        h3Configuración de Horash3
-        ul id=lights-schedule
-          liLunes input type=number id=monday-hours placeholder=Horasli
-          liMartes input type=number id=tuesday-hours placeholder=Horasli
-          liMiércoles input type=number id=wednesday-hours placeholder=Horasli
-          liJueves input type=number id=thursday-hours placeholder=Horasli
-          liViernes input type=number id=friday-hours placeholder=Horasli
-          liSábado input type=number id=saturday-hours placeholder=Horasli
-          liDomingo input type=number id=sunday-hours placeholder=Horasli
-        ul
-      section
+    <!-- Control por Cuadrantes -->
+    <div class="grid-container">
+      <!-- Cuadrante 1 Luces -->
+      <section id="lights-control" class="quadrant">
+        <h2>Luces</h2>
+        <p>Estado: <span id="lights-status">Apagadas</span></p>
+        <button id="lights-manual-on">Modo Manual Prendido</button>
+        <button id="lights-manual-off">Modo Manual Apagado</button>
+        <button id="lights-timer-mode">Modo Manual Timer</button>
+        <h3>Configuración de Horas</h3>
+        <ul id="lights-schedule">
+          <li>Lunes: <input type="number" id="monday-hours" placeholder="Horas"></li>
+          <li>Martes: <input type="number" id="tuesday-hours" placeholder="Horas"></li>
+          <li>Miércoles: <input type="number" id="wednesday-hours" placeholder="Horas"></li>
+          <li>Jueves: <input type="number" id="thursday-hours" placeholder="Horas"></li>
+          <li>Viernes: <input type="number" id="friday-hours" placeholder="Horas"></li>
+          <li>Sábado: <input type="number" id="saturday-hours" placeholder="Horas"></li>
+          <li>Domingo: <input type="number" id="sunday-hours" placeholder="Horas"></li>
+        </ul>
+      </section>
 
-      !-- Cuadrante 2 Humidificador --
-      section id=humidifier-control class=quadrant
-        h2Humidificadorh2
-        pEstado span id=humidifier-statusApagadospanp
-        button id=humidifier-manual-onModo Manual Prendidobutton
-        button id=humidifier-manual-offModo Manual Apagadobutton
-        button id=humidifier-config-modeModo Configurarbutton
-        h3Configuración DPVh3
-        label for=dpv-minMínimolabel
-        input type=number id=dpv-min placeholder=kPa
-        label for=dpv-maxMáximolabel
-        input type=number id=dpv-max placeholder=kPa
-      section
+      <!-- Cuadrante 2 Humidificador -->
+      <section id="humidifier-control" class="quadrant">
+        <h2>Humidificador</h2>
+        <p>Estado: <span id="humidifier-status">Apagado</span></p>
+        <button id="humidifier-manual-on">Modo Manual Prendido</button>
+        <button id="humidifier-manual-off">Modo Manual Apagado</button>
+        <button id="humidifier-config-mode">Modo Configurar</button>
+        <h3>Configuración DPV</h3>
+        <label for="dpv-min">Mínimo:</label>
+        <input type="number" id="dpv-min" placeholder="kPa">
+        <label for="dpv-max">Máximo:</label>
+        <input type="number" id="dpv-max" placeholder="kPa">
+      </section>
 
-      !-- Cuadrante 3 Extractor --
-      section id=extractor-control class=quadrant
-        h2Extractorh2
-        pEstado span id=extractor-statusApagadospanp
-        h3Configuraciónh3
-        label for=extractor-on-timeTiempo Prendidolabel
-        input type=number id=extractor-on-time placeholder=Segundos
-        label for=extractor-intervalIntervalolabel
-        input type=number id=extractor-interval placeholder=Minutos
-        label for=extractor-humidity-limitHumedad Máximalabel
-        input type=number id=extractor-humidity-limit placeholder=%
-      section
+      <!-- Cuadrante 3 Extractor -->
+      <section id="extractor-control" class="quadrant">
+        <h2>Extractor</h2>
+        <p>Estado: <span id="extractor-status">Apagado</span></p>
+        <h3>Configuración</h3>
+        <label for="extractor-on-time">Tiempo Prendido:</label>
+        <input type="number" id="extractor-on-time" placeholder="Segundos">
+        <label for="extractor-interval">Intervalo:</label>
+        <input type="number" id="extractor-interval" placeholder="Minutos">
+        <label for="extractor-humidity-limit">Humedad Máxima:</label>
+        <input type="number" id="extractor-humidity-limit" placeholder="%">
+      </section>
 
-      !-- Cuadrante 4 Riego --
-      section id=watering-control class=quadrant
-        h2Riegoh2
-        pEstado span id=watering-statusApagadospanp
-        h3Configuraciónh3
-        label for=soil-moisture-minHumedad Mínimalabel
-        input type=number id=soil-moisture-min placeholder=%
-        label for=watering-timeTiempo de Riegolabel
-        input type=number id=watering-time placeholder=Segundos
-        label for=watering-intervalIntervalolabel
-        input type=number id=watering-interval placeholder=Minutos
-        label for=soil-moisture-maxHumedad Máximalabel
-        input type=number id=soil-moisture-max placeholder=%
-      section
-    div
+      <!-- Cuadrante 4 Riego -->
+      <section id="watering-control" class="quadrant">
+        <h2>Riego</h2>
+        <p>Estado: <span id="watering-status">Apagado</span></p>
+        <h3>Configuración</h3>
+        <label for="soil-moisture-min">Humedad Mínima:</label>
+        <input type="number" id="soil-moisture-min" placeholder="%">
+        <label for="watering-time">Tiempo de Riego:</label>
+        <input type="number" id="watering-time" placeholder="Segundos">
+        <label for="watering-interval">Intervalo:</label>
+        <input type="number" id="watering-interval" placeholder="Minutos">
+        <label for="soil-moisture-max">Humedad Máxima:</label>
+        <input type="number" id="soil-moisture-max" placeholder="%">
+      </section>
+    </div>
 
-    !-- Estado Detallado --
-    section id=detailed-status
-      h2Estado Detalladoh2
-      pLuces span id=lights-runtime--span horas prendidas.p
-      pHumidificador span id=humidifier-runtime--span horas prendido.p
-      pExtractor span id=extractor-runtime--span ciclos completados.p
-      pRiego span id=watering-runtime--span ciclos completados.p
-    section
-  main
+    <!-- Estado Detallado -->
+    <section id="detailed-status">
+      <h2>Estado Detallado</h2>
+      <p>Luces: <span id="lights-runtime--span">--</span> horas prendidas.</p>
+      <p>Humidificador: <span id="humidifier-runtime--span">--</span> horas prendido.</p>
+      <p>Extractor: <span id="extractor-runtime--span">--</span> ciclos completados.</p>
+      <p>Riego: <span id="watering-runtime--span">--</span> ciclos completados.</p>
+    </section>
+  </main>
 
-  footer
-    p&copy; 2025 Sala de Cultivop
-  footer
-body
-html
+  <footer>
+    <p>&copy; 2025 Sala de Cultivo</p>
+  </footer>
+</body>
+</html>
