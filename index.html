@@ -167,5 +167,27 @@
   <footer>
     <p>&copy; 2025 Sala de Cultivo</p>
   </footer>
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+      authDomain: "sala-cultivo.firebaseapp.com",
+      databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+      projectId: "sala-cultivo",
+      storageBucket: "sala-cultivo.firebasestorage.app",
+      messagingSenderId: "388469961230",
+      appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+      measurementId: "G-72JQD67R0X"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
 </body>
 </html>
