@@ -355,24 +355,34 @@
         });
     });
 
-    // Event listener para guardar configuración
+    // Event listener para guardar la configuración de las luces (CORREGIDO)
     saveLightsConfig.addEventListener('click', () => {
-        const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
-        const horarios = {};
-        dias.forEach(dia => {
-            horarios[dia] = [];
-            for (let i = 1; i <= 2; i++) {
-                const inicio = document.getElementById(`${dia}-start-${i}`)?.value;
-                const fin = document.getElementById(`${dia}-end-${i}`)?.value;
-                if (inicio && fin) {
-                    horarios[dia].push({ inicio, fin });
-                }
-            }
-        });
+        const lucesRef = ref(db, 'configuracion/luces'); // Referencia a configuracion/luces
 
-        set(ref(db, 'configuracion/luces/dias'), horarios)
-            .then(() => console.log("Configuración de luces guardada"))
-            .catch(error => console.error("Error al guardar configuración:", error));
+        onValue(lucesRef, (snapshot) => { // Leemos la configuración ACTUAL
+            const lucesConfig = snapshot.val() || {}; // Obtener la config actual o un objeto vacío si no existe
+            const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+            const horarios = {};
+
+            dias.forEach(dia => {
+                horarios[dia] = [];
+                for (let i = 1; i <= 2; i++) {
+                    const inicio = document.getElementById(`${dia}-start-${i}`)?.value;
+                    const fin = document.getElementById(`${dia}-end-${i}`)?.value;
+                    if (inicio && fin) {
+                        horarios[dia].push({ inicio, fin });
+                    }
+                }
+            });
+
+            lucesConfig.dias = horarios; // Actualizamos SOLO la parte de los días
+
+            set(lucesRef, lucesConfig) // Guardamos la CONFIGURACION COMPLETA
+                .then(() => console.log("Configuración de luces guardada"))
+                .catch(error => console.error("Error al guardar configuración:", error));
+        }, {
+            onlyOnce: true
+        }); // Importante: {onlyOnce: true} para que solo se ejecute una vez
     });
 
     // Ejecutar todo dentro del DOMContentLoaded
@@ -389,6 +399,7 @@
         addControlListener('ventilador-manual-on', 'ventilador', true);
     });
 </script>
+
 
 
   
