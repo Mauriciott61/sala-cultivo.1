@@ -208,7 +208,7 @@
         <p>&copy; 2025 Sala de Cultivo. Todos los derechos reservados.</p>
     </footer>
 
-    <script type="module">
+    <script type="module"> 
   // Importaciones de Firebase  
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
@@ -314,8 +314,8 @@
       const updates = {};
 
       dias.forEach(dia => {
-        // Crear una *COPIA* del array (¡CAMBIO CLAVE!)
-        updates[`dias/${dia}`] = [...(lucesConfigCompleta.dias[dia] || [])]; // Usando el spread operator
+        // LIMPIAR EL ARRAY AQUÍ para evitar la acumulación
+        updates[`dias/${dia}`] = []; // *¡LIMPIAR EL ARRAY AQUÍ!* (Cambio crucial)
 
         let horarioIndex = 1;
         while (true) {
@@ -327,7 +327,7 @@
           if (startInput.value && endInput.value) {
             updates[`dias/${dia}`].push({ inicio: startInput.value, fin: endInput.value });
           } else if (startInput.value || endInput.value) {
-            console.error(`Error en inputs ${dia} ${horarioIndex}`);
+            console.error(`Error en inputs ${dia} ${horarioIndex}: Debes ingresar ambos valores (inicio y fin).`);
           }
           horarioIndex++;
         }
@@ -335,7 +335,7 @@
 
       update(lucesRef, updates).then(() => {
         console.log("Configuración guardada");
-        cargarConfiguracionLuces();
+        cargarConfiguracionLuces(); // Recargar la interfaz para mostrar los cambios
       }).catch(console.error);
     });
   });
@@ -357,6 +357,7 @@
     obtenerEstadoActual();
   });
 </script>
+
 
 
 
