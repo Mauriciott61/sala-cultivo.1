@@ -207,137 +207,189 @@
         <p>&copy; 2025 Sala de Cultivo</p>
     </footer>
     <script type="module">
-     // Importaciones de Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    // Importaciones de Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+    import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-// Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
-const firebaseConfig = {
-    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk", // Reemplaza con tu API Key
-    authDomain: "sala-cultivo.firebaseapp.com",
-    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-    projectId: "sala-cultivo",
-    storageBucket: "sala-cultivo.firebasestorage.app",
-    messagingSenderId: "388469961230",
-    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-    measurementId: "G-72JQD67R0X"
-};
-
-// Inicialización de Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getDatabase(app);
-
-function obtenerEstadoActual() {
-    const controlesRef = ref(db, 'estado_actual/controles'); // Referencia para los controles
-    const sensoresRef = ref(db, 'estado_actual/sensores'); // Referencia para los sensores
-
-    onValue(controlesRef, (snapshot) => { // Escucha cambios en los CONTROLES
-        const dataControles = snapshot.val();
-        console.log("Datos de Controles:", dataControles);
-        if (dataControles) {
-            document.getElementById('lights-status').textContent = dataControles.luces ? 'Prendidas' : 'Apagadas';
-            document.getElementById('humidifier-status').textContent = dataControles.humidificador ? 'Prendido' : 'Apagado';
-            document.getElementById('extractor-status').textContent = dataControles.extractor ? 'Prendido' : 'Apagado';
-            document.getElementById('watering-status').textContent = dataControles.bomba_riego ? 'Prendido' : 'Apagado';
-            document.getElementById('ventilador-status').textContent = dataControles.ventilador ? 'Prendido' : 'Apagado';
-        } else {
-            console.log("No hay datos de controles");
-        }
-    });
-
-    onValue(sensoresRef, (snapshot) => { // Escucha cambios en los SENSORES
-        const dataSensores = snapshot.val();
-        console.log("Datos de Sensores:", dataSensores);
-        if (dataSensores) {
-            document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
-            document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
-            document.getElementById('dpv--span').textContent = dataSensores.deficit_presion_vapor || '--';
-            document.getElementById('soil-moisture--span').textContent = dataSensores.humedad_suelo || '--';
-        } else {
-            console.log("No hay datos de sensores");
-        }
-    }, (error) => {
-        console.error("Error al leer datos de sensores:", error);
-    });
-}
-
-function actualizarControl(dispositivo, estado) {
-    if (!db) {
-        console.error("Error: db no está inicializado.");
-        return Promise.reject("db no está inicializado.");
-    }
-
-    const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
-    console.log("Referencia de Firebase:", controlRef);
-
-    return set(controlRef, estado)
-        .then(() => {
-            console.log(`${dispositivo} actualizado a ${estado}`);
-            agregarEventoHistorial(dispositivo, estado);
-        })
-        .catch((error) => {
-            console.error("Error actualizando control:", error);
-            throw error;
-        });
-}
-
-function agregarEventoHistorial(dispositivo, estado) {
-    const eventosRef = ref(db, 'historial_eventos/eventos');
-    const evento = {
-        dispositivo: dispositivo,
-        responsable: "Usuario 1",
-        timestamp: new Date().toISOString(),
-        tipo: "cambio_control",
-        valor_actual: estado,
-        valor_anterior: estado === true ? false : true
+    // Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk", // Reemplaza con tu API Key
+        authDomain: "sala-cultivo.firebaseapp.com",
+        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+        projectId: "sala-cultivo",
+        storageBucket: "sala-cultivo.firebasestorage.app",
+        messagingSenderId: "388469961230",
+        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+        measurementId: "G-72JQD67R0X"
     };
-    push(eventosRef, evento)
-        .then(() => {
-            console.log("Evento agregado al historial");
-        })
-        .catch((error) => {
-            console.error("Error agregando evento:", error);
+
+    // Inicialización de Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+
+    // Referencias a elementos HTML
+    const lightsStatus = document.getElementById('lights-status');
+    const lightsManualOn = document.getElementById('lights-manual-on');
+    const lightsManualOff = document.getElementById('lights-manual-off');
+    const lightsScheduleDisplay = document.getElementById('lights-schedule-display');
+    const saveLightsConfig = document.getElementById('save-lights-config');
+
+    // Funciones
+    function obtenerEstadoActual() {
+        const controlesRef = ref(db, 'estado_actual/controles');
+        const sensoresRef = ref(db, 'estado_actual/sensores');
+
+        onValue(controlesRef, (snapshot) => {
+            const dataControles = snapshot.val();
+            if (dataControles) {
+                lightsStatus.textContent = dataControles.luces ? 'Prendidas' : 'Apagadas';
+                // Aquí agregar más dispositivos como el humidificador, extractor, etc.
+            }
         });
-}
 
-function addControlListener(buttonId, controlName, state) {
-    const button = document.getElementById(buttonId);
-    console.log("Buscando botón con ID:", buttonId);
-    if (!button) {
-        console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
-        return;
+        onValue(sensoresRef, (snapshot) => {
+            const dataSensores = snapshot.val();
+            if (dataSensores) {
+                // Actualiza los elementos del DOM con los datos de los sensores
+                document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
+                document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
+                // Añadir más sensores aquí
+            }
+        });
     }
-    console.log("Botón encontrado:", button);
-    console.log("Añadiendo event listener al botón:", buttonId);
 
-    button.addEventListener('click', () => {
-        console.log(`Botón '${buttonId}' clickeado. Actualizando '${controlName}' a ${state}`);
-        actualizarControl(controlName, state)
+    function actualizarControl(dispositivo, estado) {
+        const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
+        return set(controlRef, estado)
             .then(() => {
-                console.log("Operación completada con éxito.");
+                agregarEventoHistorial(dispositivo, estado);
             })
             .catch((error) => {
-                console.error("Error en la operación:", error);
+                console.error("Error actualizando control:", error);
             });
+    }
+
+    function agregarEventoHistorial(dispositivo, estado) {
+        const eventosRef = ref(db, 'historial_eventos/eventos');
+        const evento = {
+            dispositivo: dispositivo,
+            responsable: "Usuario 1",
+            timestamp: new Date().toISOString(),
+            tipo: "cambio_control",
+            valor_actual: estado,
+            valor_anterior: estado === true ? false : true
+        };
+        push(eventosRef, evento)
+            .then(() => {
+                console.log("Evento agregado al historial");
+            })
+            .catch((error) => {
+                console.error("Error agregando evento:", error);
+            });
+    }
+
+    function cargarConfiguracionLuces() {
+        const lucesRef = ref(db, 'configuracion/luces');
+        onValue(lucesRef, (snapshot) => {
+            const lucesConfig = snapshot.val();
+            if (lucesConfig) {
+                lightsStatus.textContent = lucesConfig.estado_manual === true ? 'Prendidas (Manual)' : lucesConfig.estado_manual === false ? 'Apagadas (Manual)' : 'Automático';
+                // Cargar la configuración de los horarios
+                lightsScheduleDisplay.innerHTML = '';
+                if (lucesConfig.dias) {
+                    for (const dia in lucesConfig.dias) {
+                        const horariosDia = lucesConfig.dias[dia];
+                        let horariosTexto = `${dia}: `;
+                        horariosDia.forEach((horario, index) => {
+                            horariosTexto += `${horario.inicio} - ${horario.fin}`;
+                            if (index < horariosDia.length - 1) {
+                                horariosTexto += ', ';
+                            }
+
+                            // Cargar valores en los inputs de time
+                            const startInput = document.getElementById(`${dia}-start-${index + 1}`);
+                            const endInput = document.getElementById(`${dia}-end-${index + 1}`);
+                            if (startInput && endInput) {
+                                startInput.value = horario.inicio;
+                                endInput.value = horario.fin;
+                            }
+                        });
+                        const p = document.createElement('p');
+                        p.textContent = horariosTexto;
+                        lightsScheduleDisplay.appendChild(p);
+                    }
+                }
+            }
+        });
+    }
+
+    function addControlListener(buttonId, controlName, state) {
+        const button = document.getElementById(buttonId);
+        if (!button) {
+            console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
+            return;
+        }
+        button.addEventListener('click', () => {
+            actualizarControl(controlName, state)
+                .then(() => {
+                    console.log("Operación completada con éxito.");
+                })
+                .catch((error) => {
+                    console.error("Error en la operación:", error);
+                });
+        });
+    }
+
+    // Event listeners para los botones manuales
+    lightsManualOn.addEventListener('click', () => {
+        set(ref(db, 'configuracion/luces/estado_manual'), true).then(() => {
+            actualizarControl('luces', true);
+        });
     });
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOMContentLoaded disparado. El DOM está listo.");
+    lightsManualOff.addEventListener('click', () => {
+        set(ref(db, 'configuracion/luces/estado_manual'), false).then(() => {
+            actualizarControl('luces', false);
+        });
+    });
 
-    addControlListener('lights-manual-on', 'luces', true);
-    addControlListener('lights-manual-off', 'luces', false);
-    addControlListener('humidifier-manual-on', 'humidificador', true);
-    addControlListener('humidifier-manual-off', 'humidificador', false);
-    addControlListener('extractor-manual-on', 'extractor', true);
-    addControlListener('watering-manual-on', 'bomba_riego', true);
-    addControlListener('ventilador-manual-on', 'ventilador', true);
-});
+    // Event listener para guardar configuración
+    saveLightsConfig.addEventListener('click', () => {
+        const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+        const horarios = {};
+        dias.forEach(dia => {
+            horarios[dia] = [];
+            for (let i = 1; i <= 2; i++) {
+                const inicio = document.getElementById(`${dia}-start-${i}`)?.value;
+                const fin = document.getElementById(`${dia}-end-${i}`)?.value;
+                if (inicio && fin) {
+                    horarios[dia].push({ inicio, fin });
+                }
+            }
+        });
 
-obtenerEstadoActual();
-    </script>
+        set(ref(db, 'configuracion/luces/dias'), horarios)
+            .then(() => console.log("Configuración de luces guardada"))
+            .catch(error => console.error("Error al guardar configuración:", error));
+    });
+
+    // Ejecutar todo dentro del DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarConfiguracionLuces();
+        obtenerEstadoActual();
+
+        addControlListener('lights-manual-on', 'luces', true);
+        addControlListener('lights-manual-off', 'luces', false);
+        addControlListener('humidifier-manual-on', 'humidificador', true);
+        addControlListener('humidifier-manual-off', 'humidificador', false);
+        addControlListener('extractor-manual-on', 'extractor', true);
+        addControlListener('watering-manual-on', 'bomba_riego', true);
+        addControlListener('ventilador-manual-on', 'ventilador', true);
+    });
+</script>
+
 
   
 </body>
