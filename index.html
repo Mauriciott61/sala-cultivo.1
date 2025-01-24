@@ -209,7 +209,7 @@
     <script type="module">
   // Importaciones de Firebase  
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+  import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
   // Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
   const firebaseConfig = {
@@ -290,56 +290,63 @@
     });
   }
 
+  // Nueva función para guardar el estado manual de las luces
+  function guardarEstadoManual(estado) {
+    const lucesEstadoManualRef = ref(db, 'configuracion/luces/estado_manual');
+    const lucesEstadoRef = ref(db, 'configuracion/luces/estado');
+
+    set(lucesEstadoManualRef, estado).then(() => {
+      set(lucesEstadoRef, estado).then(() => {
+        console.log("Estado manual guardado");
+      }).catch(console.error);
+    }).catch(console.error);
+  }
+
   // Event listener para guardar la configuración de las luces
   saveLightsConfig.addEventListener('click', () => {
     const lucesRef = ref(db, 'configuracion/luces');
 
-    get(lucesRef).then((snapshot) => { // Obtener la configuración actual
-      let lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {} }; // Inicializar si no existe
-
-      // No reiniciar los días antes de agregar los nuevos horarios
+    get(lucesRef).then((snapshot) => {
+      const lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {}, estado: false };
       const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+      const updates = {};
 
       dias.forEach(dia => {
-        // Crear un array vacío para el día, si no existe aún
-        lucesConfigCompleta.dias[dia] = lucesConfigCompleta.dias[dia] || []; 
+        // Crear una *COPIA* del array (¡CAMBIO CLAVE!)
+        updates[`dias/${dia}`] = [...(lucesConfigCompleta.dias[dia] || [])]; // Usando el spread operator
 
         let horarioIndex = 1;
-
         while (true) {
-          const startInputId = `${dia}-start-${horarioIndex}`;
-          const endInputId = `${dia}-end-${horarioIndex}`;
-          const startInput = document.getElementById(startInputId);
-          const endInput = document.getElementById(endInputId);
+          const startInput = document.getElementById(`${dia}-start-${horarioIndex}`);
+          const endInput = document.getElementById(`${dia}-end-${horarioIndex}`);
 
-          if (!startInput || !endInput) {
-            if (horarioIndex === 1) {
-              console.log(`No se encontraron inputs para ${dia}, se asume que no hay horarios.`);
-            }
-            break;
-          }
+          if (!startInput || !endInput) break;
 
           if (startInput.value && endInput.value) {
-            lucesConfigCompleta.dias[dia].push({
-              inicio: startInput.value,
-              fin: endInput.value
-            });
+            updates[`dias/${dia}`].push({ inicio: startInput.value, fin: endInput.value });
           } else if (startInput.value || endInput.value) {
-            console.error(`Error en los inputs de ${dia} (horario ${horarioIndex}): Falta hora de inicio o fin.`);
+            console.error(`Error en inputs ${dia} ${horarioIndex}`);
           }
           horarioIndex++;
         }
       });
 
-      set(lucesRef, lucesConfigCompleta)
-        .then(() => {
-          console.log("Configuración de luces guardada correctamente en Firebase");
-          cargarConfiguracionLuces();
-        })
-        .catch(error => {
-          console.error("Error al guardar la configuración de luces en Firebase:", error);
-        });
+      update(lucesRef, updates).then(() => {
+        console.log("Configuración guardada");
+        cargarConfiguracionLuces();
+      }).catch(console.error);
     });
+  });
+
+  // Escucha los cambios en el estado manual
+  lightsManualOn.addEventListener('click', () => {
+    guardarEstadoManual(true); // Cambia a manual ON
+    lightsStatus.textContent = 'Prendidas (Manual)';
+  });
+
+  lightsManualOff.addEventListener('click', () => {
+    guardarEstadoManual(false); // Cambia a manual OFF
+    lightsStatus.textContent = 'Apagadas (Manual)';
   });
 
   // Ejecutar todo dentro del DOMContentLoaded
@@ -348,6 +355,7 @@
     obtenerEstadoActual();
   });
 </script>
+
 
 
 
