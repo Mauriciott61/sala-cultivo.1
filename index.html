@@ -369,37 +369,47 @@
         const lucesRef = ref(db, 'configuracion/luces');
 
         get(lucesRef).then((snapshot) => { // Obtener la configuración actual
-            let lucesConfigCompleta = snapshot.val() || { estado_manual: null }; // Inicializar si no existe
+            let lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {} }; // Inicializar si no existe
 
-            lucesConfigCompleta.dias = {}; // Reinicializar 'dias' para evitar datos antiguos
+            lucesConfigCompleta.dias = {}; // Reinicializar 'dias' SOLO UNA VEZ
+
             const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
 
             dias.forEach(dia => {
-                lucesConfigCompleta.dias[dia] = [];
+                // *** CORRECCIÓN FINAL: CREAR SIEMPRE EL ARRAY, AUNQUE ESTÉ VACÍO ***
+                lucesConfigCompleta.dias[dia] = []; // Asegurar que el array exista SIEMPRE
+
                 let horarioIndex = 1;
 
                 while (true) {
-                    const startInput = document.getElementById(`${dia}-start-${horarioIndex}`);
-                    const endInput = document.getElementById(`${dia}-end-${horarioIndex}`);
+                    const startInputId = `${dia}-start-${horarioIndex}`;
+                    const endInputId = `${dia}-end-${horarioIndex}`;
+                    const startInput = document.getElementById(startInputId);
+                    const endInput = document.getElementById(endInputId);
 
-                    if (startInput && endInput) {
-                        if (startInput.value && endInput.value) {
-                            lucesConfigCompleta.dias[dia].push({
-                                inicio: startInput.value,
-                                fin: endInput.value
-                            });
+                    if (!startInput || !endInput) {
+                        if (horarioIndex === 1) {
+                            console.log(`No se encontraron inputs para ${dia}, se asume que no hay horarios.`);
                         }
-                        horarioIndex++;
-                    } else {
                         break;
                     }
+
+                    if (startInput.value && endInput.value) {
+                        lucesConfigCompleta.dias[dia].push({
+                            inicio: startInput.value,
+                            fin: endInput.value
+                        });
+                    } else if (startInput.value || endInput.value) {
+                        console.error(`Error en los inputs de ${dia} (horario ${horarioIndex}): Falta hora de inicio o fin.`);
+                    }
+                    horarioIndex++;
                 }
             });
 
-            set(lucesRef, lucesConfigCompleta) // Guardar el objeto COMPLETO en /luces
+            set(lucesRef, lucesConfigCompleta)
                 .then(() => {
                     console.log("Configuración de luces guardada correctamente en Firebase");
-                    cargarConfiguracionLuces(); //Recargar los datos
+                    cargarConfiguracionLuces();
                 })
                 .catch(error => {
                     console.error("Error al guardar la configuración de luces en Firebase:", error);
@@ -420,6 +430,7 @@
         addControlListener('ventilador-manual-on', 'ventilador', true);
     });
 </script>
+
 
 
 
