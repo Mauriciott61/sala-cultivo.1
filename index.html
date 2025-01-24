@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -91,61 +91,61 @@
         </section>
 
         <div class="grid-container">
-           <section id="lights-config" class="quadrant">
-    <h2>Configuración de Luces</h2>
-    <p>Estado: <span id="lights-status">Apagadas</span></p>
-    <button id="lights-manual-on">Modo Manual Prendido</button>
-    <button id="lights-manual-off">Modo Manual Apagado</button>
+            <section id="lights-config" class="quadrant">
+                <h2>Configuración de Luces</h2>
+                <p>Estado: <span id="lights-status">Apagadas</span></p>
+                <button id="lights-manual-on">Modo Manual Prendido</button>
+                <button id="lights-manual-off">Modo Manual Apagado</button>
 
-    <h3>Horarios</h3>
-    <div id="lights-schedule-display"></div> <--- Div para mostrar los horarios que vienen de firebase
-    <h3>Modificar Horarios</h3>
-    <ul id="lights-schedule">
-        <li>Lunes: 
-            <input type="time" id="monday-start-1" value="10:00">
-            <input type="time" id="monday-end-1" value="14:00">
-            <input type="time" id="monday-start-2" value="18:00">
-            <input type="time" id="monday-end-2" value="22:00">
-        </li>
-        <li>Martes:
-            <input type="time" id="tuesday-start-1" value="09:00">
-            <input type="time" id="tuesday-end-1" value="13:00">
-            <input type="time" id="tuesday-start-2" value="17:00">
-            <input type="time" id="tuesday-end-2" value="21:00">
-        </li>
-        <li>Miércoles:
-            <input type="time" id="wednesday-start-1" value="08:00">
-            <input type="time" id="wednesday-end-1" value="12:00">
-            <input type="time" id="wednesday-start-2" value="16:00">
-            <input type="time" id="wednesday-end-2" value="20:00">
-        </li>
-        <li>Jueves:
-            <input type="time" id="thursday-start-1" value="10:00">
-            <input type="time" id="thursday-end-1" value="14:00">
-            <input type="time" id="thursday-start-2" value="18:00">
-            <input type="time" id="thursday-end-2" value="22:00">
-        </li>
-        <li>Viernes:
-            <input type="time" id="friday-start-1" value="09:00">
-            <input type="time" id="friday-end-1" value="13:00">
-            <input type="time" id="friday-start-2" value="17:00">
-            <input type="time" id="friday-end-2" value="21:00">
-        </li>
-        <li>Sábado:
-            <input type="time" id="saturday-start-1" value="08:00">
-            <input type="time" id="saturday-end-1" value="12:00">
-            <input type="time" id="saturday-start-2" value="16:00">
-            <input type="time" id="saturday-end-2" value="20:00">
-        </li>
-        <li>Domingo:
-            <input type="time" id="sunday-start-1" value="10:00">
-            <input type="time" id="sunday-end-1" value="14:00">
-            <input type="time" id="sunday-start-2" value="18:00">
-            <input type="time" id="sunday-end-2" value="22:00">
-        </li>
-    </ul>
-    <button id="save-lights-config">Guardar Configuración Luces</button>
-</section>
+                <h3>Horarios</h3>
+                <div id="lights-schedule-display"></div> <!-- Div para mostrar los horarios que vienen de firebase -->
+                <h3>Modificar Horarios</h3>
+                <ul id="lights-schedule">
+                    <li>Lunes: 
+                        <input type="time" id="lunes-start-1" value="10:00">
+                        <input type="time" id="lunes-end-1" value="14:00">
+                        <input type="time" id="lunes-start-2" value="18:00">
+                        <input type="time" id="lunes-end-2" value="22:00">
+                    </li>
+                    <li>Martes:
+                        <input type="time" id="martes-start-1" value="09:00">
+                        <input type="time" id="martes-end-1" value="13:00">
+                        <input type="time" id="martes-start-2" value="17:00">
+                        <input type="time" id="martes-end-2" value="21:00">
+                    </li>
+                    <li>Miércoles:
+                        <input type="time" id="miércoles-start-1" value="08:00">
+                        <input type="time" id="miércoles-end-1" value="12:00">
+                        <input type="time" id="miércoles-start-2" value="16:00">
+                        <input type="time" id="miércoles-end-2" value="20:00">
+                    </li>
+                    <li>Jueves:
+                        <input type="time" id="jueves-start-1" value="10:00">
+                        <input type="time" id="jueves-end-1" value="14:00">
+                        <input type="time" id="jueves-start-2" value="18:00">
+                        <input type="time" id="jueves-end-2" value="22:00">
+                    </li>
+                    <li>Viernes:
+                        <input type="time" id="viernes-start-1" value="09:00">
+                        <input type="time" id="viernes-end-1" value="13:00">
+                        <input type="time" id="viernes-start-2" value="17:00">
+                        <input type="time" id="viernes-end-2" value="21:00">
+                    </li>
+                    <li>Sábado:
+                        <input type="time" id="sábado-start-1" value="08:00">
+                        <input type="time" id="sábado-end-1" value="12:00">
+                        <input type="time" id="sábado-start-2" value="16:00">
+                        <input type="time" id="sábado-end-2" value="20:00">
+                    </li>
+                    <li>Domingo:
+                        <input type="time" id="domingo-start-1" value="10:00">
+                        <input type="time" id="domingo-end-1" value="14:00">
+                        <input type="time" id="domingo-start-2" value="18:00">
+                        <input type="time" id="domingo-end-2" value="22:00">
+                    </li>
+                </ul>
+                <button id="save-lights-config">Guardar Configuración Luces</button>
+            </section>
 
             <section id="humidifier-control" class="quadrant">
                 <h2>Humidificador</h2>
@@ -172,21 +172,22 @@
                 <input type="number" id="extractor-humidity-limit" placeholder="%">
             </section>
 
-           <section id="watering-control" class="quadrant">
-    <h2>Riego</h2>
-    <p>Estado: <span id="watering-status">Apagado</span></p>
-    <button id="watering-manual-on">Modo Manual Prendido</button> <--- ¡BOTÓN AGREGADO!
-    <h3>Configuración</h3>
-    <label for="soil-moisture-min">Humedad Mínima:</label>
-    <input type="number" id="soil-moisture-min" placeholder="%">
-    <label for="watering-time">Tiempo de Riego:</label>
-    <input type="number" id="watering-time" placeholder="Segundos">
-    <label for="watering-interval">Intervalo:</label>
-    <input type="number" id="watering-interval" placeholder="Minutos">
-    <label for="soil-moisture-max">Humedad Máxima:</label>
-    <input type="number" id="soil-moisture-max" placeholder="%">
-</section>
-                <section id="ventilador-control" class="quadrant">
+            <section id="watering-control" class="quadrant">
+                <h2>Riego</h2>
+                <p>Estado: <span id="watering-status">Apagado</span></p>
+                <button id="watering-manual-on">Modo Manual Prendido</button> <!-- ¡BOTÓN AGREGADO! -->
+                <h3>Configuración</h3>
+                <label for="soil-moisture-min">Humedad Mínima:</label>
+                <input type="number" id="soil-moisture-min" placeholder="%">
+                <label for="watering-time">Tiempo de Riego:</label>
+                <input type="number" id="watering-time" placeholder="Segundos">
+                <label for="watering-interval">Intervalo:</label>
+                <input type="number" id="watering-interval" placeholder="Minutos">
+                <label for="soil-moisture-max">Humedad Máxima:</label>
+                <input type="number" id="soil-moisture-max" placeholder="%">
+            </section>
+            
+            <section id="ventilador-control" class="quadrant">
                 <h2>Ventilador</h2>
                 <p>Estado: <span id="ventilador-status">Apagado</span></p>
                 <button id="ventilador-manual-on">Modo Manual Prendido</button>
@@ -204,8 +205,9 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 Sala de Cultivo</p>
+        <p>&copy; 2025 Sala de Cultivo. Todos los derechos reservados.</p>
     </footer>
+
     <script type="module">
   // Importaciones de Firebase  
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
