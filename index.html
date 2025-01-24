@@ -208,7 +208,7 @@
         <p>&copy; 2025 Sala de Cultivo. Todos los derechos reservados.</p>
     </footer>
 
-    <script type="module"> 
+   <script type="module"> 
   // Importaciones de Firebase  
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
@@ -229,14 +229,14 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Referencias a elementos HTML
+  // Referencias a elementos HTML de las luces
   const lightsStatus = document.getElementById('lights-status');
   const lightsManualOn = document.getElementById('lights-manual-on');
   const lightsManualOff = document.getElementById('lights-manual-off');
   const lightsScheduleDisplay = document.getElementById('lights-schedule-display');
   const saveLightsConfig = document.getElementById('save-lights-config');
 
-  // Funciones
+  // Funciones para luces
   function obtenerEstadoActual() {
     const controlesRef = ref(db, 'estado_actual/controles');
     const sensoresRef = ref(db, 'estado_actual/sensores');
@@ -257,7 +257,6 @@
     });
   }
 
-  // Cargar configuración de luces
   function cargarConfiguracionLuces() {
     const lucesRef = ref(db, 'configuracion/luces');
     onValue(lucesRef, (snapshot) => {
@@ -314,8 +313,7 @@
       const updates = {};
 
       dias.forEach(dia => {
-        // LIMPIAR EL ARRAY AQUÍ para evitar la acumulación
-        updates[`dias/${dia}`] = []; // *¡LIMPIAR EL ARRAY AQUÍ!* (Cambio crucial)
+        updates[`dias/${dia}`] = []; // Limpiar el array
 
         let horarioIndex = 1;
         while (true) {
@@ -356,7 +354,97 @@
     cargarConfiguracionLuces();
     obtenerEstadoActual();
   });
+
+  // --- Parte del humidificador ---
+
+  // Referencias a elementos HTML del humidificador
+  const humidifierStatus = document.getElementById('humidifier-status');
+  const humidifierManualOn = document.getElementById('humidifier-manual-on');
+  const humidifierManualOff = document.getElementById('humidifier-manual-off');
+  const dpvMinInput = document.getElementById('dpv-min');
+  const dpvMaxInput = document.getElementById('dpv-max');
+  const humidifierConfigMode = document.getElementById('humidifier-config-mode');
+
+  // Función para calcular el estado del humidificador
+  function calcularEstadoHumidificador() {
+    const humidificadorRef = ref(db, 'configuracion/humidificador');
+    get(humidificadorRef).then((snapshot) => {
+        const humidificadorConfig = snapshot.val();
+        if (humidificadorConfig) {
+            let estadoHumidificador;
+            const dpv = parseFloat(document.getElementById('dpv--span').textContent) || 0; // Obtener DPV de la interfaz
+
+            if (humidificadorConfig.estado_manual !== null) {
+                estadoHumidificador = humidificadorConfig.estado_manual;
+                console.log("calcularEstadoHumidificador: Modo manual, estado:", estadoHumidificador);
+            } else {
+                // Modo automático (basado en DPV)
+                if (dpv >= humidificadorConfig.dpv_max) {
+                    estadoHumidificador = false; // Apagar si DPV es mayor o igual al máximo
+                } else if (dpv <= humidificadorConfig.dpv_min) {
+                    estadoHumidificador = true; // Prender si DPV es menor o igual al mínimo
+                } else {
+                    estadoHumidificador = false; // Mantener apagado si está entre los valores
+                }
+                console.log("calcularEstadoHumidificador: Modo automático, estado:", estadoHumidificador, "DPV:", dpv, "min:", humidificadorConfig.dpv_min, "max:", humidificadorConfig.dpv_max);
+            }
+
+            const humidificadorActualRef = ref(db, 'estado_actual/controles/humidificador');
+            set(humidificadorActualRef, estadoHumidificador).then(() => {
+                console.log("calcularEstadoHumidificador: estado guardado en estado_actual/controles/humidificador:", estadoHumidificador);
+                humidifierStatus.textContent = estadoHumidificador ? 'Prendido (Manual)' : 'Apagado (Manual)';
+            }).catch(console.error);
+        }
+    });
+  }
+
+  // Funciones para guardar el estado manual del humidificador
+  function guardarEstadoManualHumidificador(estado) {
+    const humidificadorEstadoManualRef = ref(db, 'configuracion/humidificador/estado_manual');
+    set(humidificadorEstadoManualRef, estado).then(() => {
+        console.log("guardarEstadoManualHumidificador: estado_manual guardado:", estado);
+        calcularEstadoHumidificador();
+    }).catch(console.error);
+  }
+
+  function guardarConfiguracionDPV() {
+    const humidificadorRef = ref(db, 'configuracion/humidificador');
+    update(humidificadorRef, { dpv_min: dpvMinInput.value, dpv_max: dpvMaxInput.value }).then(() => {
+        console.log("Configuración DPV guardada");
+        calcularEstadoHumidificador();
+    }).catch(console.error);
+  }
+
+  humidifierConfigMode.addEventListener('click', () => {
+    guardarConfiguracionDPV();
+  });
+
+  // Event listeners para el humidificador
+  humidifierManualOn.addEventListener('click', () => {
+    guardarEstadoManualHumidificador(true);
+  });
+
+  humidifierManualOff.addEventListener('click', () => {
+    guardarEstadoManualHumidificador(false);
+  });
+
+  // Llamar a calcularEstadoHumidificador() al cargar la página
+  document.addEventListener('DOMContentLoaded', () => {
+    calcularEstadoHumidificador();
+  });
+
+  // Escuchar cambios en configuracion/humidificador para recalcular el estado
+  const humidificadorRef = ref(db, 'configuracion/humidificador');
+  onValue(humidificadorRef, (snapshot) => {
+    const humidificadorConfig = snapshot.val();
+    if (humidificadorConfig) {
+      dpvMinInput.value = humidificadorConfig.dpv_min || 0;
+      dpvMaxInput.value = humidificadorConfig.dpv_max || 100;
+      humidifierConfigMode.textContent = humidificadorConfig.estado_manual !== null ? "Modo Manual" : "Modo Automático";
+    }
+  });
 </script>
+
 
 
 
