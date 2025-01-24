@@ -357,32 +357,32 @@
 
     // Event listener para guardar la configuración de las luces (CORREGIDO)
     saveLightsConfig.addEventListener('click', () => {
-        const lucesRef = ref(db, 'configuracion/luces'); // Referencia a configuracion/luces
+        const lucesRef = ref(db, 'configuracion/luces');
 
-        onValue(lucesRef, (snapshot) => { // Leemos la configuración ACTUAL
-            const lucesConfig = snapshot.val() || {}; // Obtener la config actual o un objeto vacío si no existe
-            const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
-            const horarios = {};
+        const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+        const horarios = {};
 
-            dias.forEach(dia => {
-                horarios[dia] = [];
-                for (let i = 1; i <= 2; i++) {
-                    const inicio = document.getElementById(`${dia}-start-${i}`)?.value;
-                    const fin = document.getElementById(`${dia}-end-${i}`)?.value;
-                    if (inicio && fin) {
-                        horarios[dia].push({ inicio, fin });
-                    }
+        dias.forEach(dia => {
+            horarios[dia] = [];
+            for (let i = 1; i <= 2; i++) {
+                const inicio = document.getElementById(`${dia}-start-${i}`)?.value;
+                const fin = document.getElementById(`${dia}-end-${i}`)?.value;
+                if (inicio && fin) {
+                    horarios[dia].push({ inicio, fin });
                 }
-            });
+            }
+        });
 
-            lucesConfig.dias = horarios; // Actualizamos SOLO la parte de los días
+        // *** Estructura COMPLETA que se va a guardar ***
+        const lucesConfigCompleta = {
+            estado: false, // Valor por defecto
+            estado_manual: false, // Valor por defecto
+            dias: horarios
+        };
 
-            set(lucesRef, lucesConfig) // Guardamos la CONFIGURACION COMPLETA
-                .then(() => console.log("Configuración de luces guardada"))
-                .catch(error => console.error("Error al guardar configuración:", error));
-        }, {
-            onlyOnce: true
-        }); // Importante: {onlyOnce: true} para que solo se ejecute una vez
+        set(lucesRef, lucesConfigCompleta) // Guardar LA ESTRUCTURA COMPLETA
+            .then(() => console.log("Configuración de luces guardada"))
+            .catch(error => console.error("Error al guardar configuración:", error));
     });
 
     // Ejecutar todo dentro del DOMContentLoaded
