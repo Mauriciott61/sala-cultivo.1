@@ -91,23 +91,61 @@
         </section>
 
         <div class="grid-container">
-            <section id="lights-control" class="quadrant">
-                <h2>Luces</h2>
-                <p>Estado: <span id="lights-status">Apagadas</span></p>
-                <button id="lights-manual-on">Modo Manual Prendido</button>
-                <button id="lights-manual-off">Modo Manual Apagado</button>
-                <button id="lights-timer-mode">Modo Manual Timer</button>
-                <h3>Configuración de Horas</h3>
-                <ul id="lights-schedule">
-                    <li>Lunes: <input type="number" id="monday-hours" placeholder="Horas"></li>
-                    <li>Martes: <input type="number" id="tuesday-hours" placeholder="Horas"></li>
-                    <li>Miércoles: <input type="number" id="wednesday-hours" placeholder="Horas"></li>
-                    <li>Jueves: <input type="number" id="thursday-hours" placeholder="Horas"></li>
-                    <li>Viernes: <input type="number" id="friday-hours" placeholder="Horas"></li>
-                    <li>Sábado: <input type="number" id="saturday-hours" placeholder="Horas"></li>
-                    <li>Domingo: <input type="number" id="sunday-hours" placeholder="Horas"></li>
-                </ul>
-            </section>
+           <section id="lights-config" class="quadrant">
+    <h2>Configuración de Luces</h2>
+    <p>Estado: <span id="lights-status">Apagadas</span></p>
+    <button id="lights-manual-on">Modo Manual Prendido</button>
+    <button id="lights-manual-off">Modo Manual Apagado</button>
+
+    <h3>Horarios</h3>
+    <div id="lights-schedule-display"></div> <--- Div para mostrar los horarios que vienen de firebase
+    <h3>Modificar Horarios</h3>
+    <ul id="lights-schedule">
+        <li>Lunes: 
+            <input type="time" id="monday-start-1" value="10:00">
+            <input type="time" id="monday-end-1" value="14:00">
+            <input type="time" id="monday-start-2" value="18:00">
+            <input type="time" id="monday-end-2" value="22:00">
+        </li>
+        <li>Martes:
+            <input type="time" id="tuesday-start-1" value="09:00">
+            <input type="time" id="tuesday-end-1" value="13:00">
+            <input type="time" id="tuesday-start-2" value="17:00">
+            <input type="time" id="tuesday-end-2" value="21:00">
+        </li>
+        <li>Miércoles:
+            <input type="time" id="wednesday-start-1" value="08:00">
+            <input type="time" id="wednesday-end-1" value="12:00">
+            <input type="time" id="wednesday-start-2" value="16:00">
+            <input type="time" id="wednesday-end-2" value="20:00">
+        </li>
+        <li>Jueves:
+            <input type="time" id="thursday-start-1" value="10:00">
+            <input type="time" id="thursday-end-1" value="14:00">
+            <input type="time" id="thursday-start-2" value="18:00">
+            <input type="time" id="thursday-end-2" value="22:00">
+        </li>
+        <li>Viernes:
+            <input type="time" id="friday-start-1" value="09:00">
+            <input type="time" id="friday-end-1" value="13:00">
+            <input type="time" id="friday-start-2" value="17:00">
+            <input type="time" id="friday-end-2" value="21:00">
+        </li>
+        <li>Sábado:
+            <input type="time" id="saturday-start-1" value="08:00">
+            <input type="time" id="saturday-end-1" value="12:00">
+            <input type="time" id="saturday-start-2" value="16:00">
+            <input type="time" id="saturday-end-2" value="20:00">
+        </li>
+        <li>Domingo:
+            <input type="time" id="sunday-start-1" value="10:00">
+            <input type="time" id="sunday-end-1" value="14:00">
+            <input type="time" id="sunday-start-2" value="18:00">
+            <input type="time" id="sunday-end-2" value="22:00">
+        </li>
+    </ul>
+    <button id="save-lights-config">Guardar Configuración Luces</button>
+</section>
 
             <section id="humidifier-control" class="quadrant">
                 <h2>Humidificador</h2>
