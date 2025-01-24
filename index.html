@@ -349,82 +349,102 @@
     lightsStatus.textContent = 'Apagadas (Manual)';
   });
 
-  // Ejecutar todo dentro del DOMContentLoaded...
+  // Ejecutar todo dentro del DOMContentLoaded
   document.addEventListener('DOMContentLoaded', () => {
     cargarConfiguracionLuces();
     obtenerEstadoActual();
   });
 
-  // Función para calcular el DPV (FÓRMULA DE TETENS)
-  function calcularDPV(temperatura, humedad) {
-    const VP_sat = 0.61078 * Math.exp((17.2694 * temperatura) / (temperatura + 237.3));
-    const VP_actual = VP_sat * (humedad / 100);
-    const DPV = VP_sat - VP_actual;
-    return DPV;
-  }
+  // --- Parte del humidificador ---
 
-  function obtenerEstadoActual() {
-    const sensoresRef = ref(db, 'estado_actual/sensores');
+  // Referencias a elementos HTML del humidificador
+  const humidifierStatus = document.getElementById('humidifier-status');
+  const humidifierManualOn = document.getElementById('humidifier-manual-on');
+  const humidifierManualOff = document.getElementById('humidifier-manual-off');
+  const dpvMinInput = document.getElementById('dpv-min');
+  const dpvMaxInput = document.getElementById('dpv-max');
+  const humidifierConfigMode = document.getElementById('humidifier-config-mode');
 
-    onValue(sensoresRef, (snapshot) => {
-      const dataSensores = snapshot.val();
-      console.log("Datos de sensores recibidos de Firebase:", dataSensores);
-      if (dataSensores) {
-        document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
-        document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
-
-        const dpv = calcularDPV(dataSensores.temperatura, dataSensores.humedad_ambiente);
-        document.getElementById('dpv--span').textContent = dpv.toFixed(2) || '--';
-
-        calcularEstadoHumidificador();
-      }
-    });
-  }
-
+  // Función para calcular el estado del humidificador
   function calcularEstadoHumidificador() {
     const humidificadorRef = ref(db, 'configuracion/humidificador');
     get(humidificadorRef).then((snapshot) => {
-      const humidificadorConfig = snapshot.val();
-      if (humidificadorConfig) {
-        let estadoHumidificador;
-        const dpv = parseFloat(document.getElementById('dpv--span').textContent) || 0;
+        const humidificadorConfig = snapshot.val();
+        if (humidificadorConfig) {
+            let estadoHumidificador;
+            const dpv = parseFloat(document.getElementById('dpv--span').textContent) || 0; // Obtener DPV de la interfaz
 
-        if (humidificadorConfig.estado_manual !== null) {
-          estadoHumidificador = humidificadorConfig.estado_manual;
-          console.log("calcularEstadoHumidificador: Modo manual, estado:", estadoHumidificador);
-        } else {
-          if (dpv >= humidificadorConfig.dpv_max) {
-            estadoHumidificador = false;
-          } else if (dpv <= humidificadorConfig.dpv_min) {
-            estadoHumidificador = true;
-          } else {
-            estadoHumidificador = false;
-          }
-          console.log("calcularEstadoHumidificador: Modo automático, estado:", estadoHumidificador, "DPV:", dpv, "min:", humidificadorConfig.dpv_min, "max:", humidificadorConfig.dpv_max);
+            if (humidificadorConfig.estado_manual !== null) {
+                estadoHumidificador = humidificadorConfig.estado_manual;
+                console.log("calcularEstadoHumidificador: Modo manual, estado:", estadoHumidificador);
+            } else {
+                // Modo automático (basado en DPV)
+                if (dpv >= humidificadorConfig.dpv_max) {
+                    estadoHumidificador = false; // Apagar si DPV es mayor o igual al máximo
+                } else if (dpv <= humidificadorConfig.dpv_min) {
+                    estadoHumidificador = true; // Prender si DPV es menor o igual al mínimo
+                } else {
+                    estadoHumidificador = false; // Mantener apagado si está entre los valores
+                }
+                console.log("calcularEstadoHumidificador: Modo automático, estado:", estadoHumidificador, "DPV:", dpv, "min:", humidificadorConfig.dpv_min, "max:", humidificadorConfig.dpv_max);
+            }
+
+            const humidificadorActualRef = ref(db, 'estado_actual/controles/humidificador');
+            set(humidificadorActualRef, estadoHumidificador).then(() => {
+                console.log("calcularEstadoHumidificador: estado guardado en estado_actual/controles/humidificador:", estadoHumidificador);
+                humidifierStatus.textContent = estadoHumidificador ? 'Prendido (Manual)' : 'Apagado (Manual)';
+            }).catch(console.error);
         }
-
-        const humidificadorActualRef = ref(db, 'estado_actual/controles/humidificador');
-        set(humidificadorActualRef, estadoHumidificador).then(() => {
-          console.log("calcularEstadoHumidificador: estado guardado en estado_actual/controles/humidificador:", estadoHumidificador);
-          document.getElementById('humidifier-status').textContent = estadoHumidificador ? 'Prendido' : 'Apagado';
-        }).catch(console.error);
-      }
     });
   }
 
+  // Funciones para guardar el estado manual del humidificador
   function guardarEstadoManualHumidificador(estado) {
     const humidificadorEstadoManualRef = ref(db, 'configuracion/humidificador/estado_manual');
-    const humidificadorEstadoRef = ref(db, 'configuracion/humidificador/estado');
-
     set(humidificadorEstadoManualRef, estado).then(() => {
-      set(humidificadorEstadoRef, estado).then(() => {
-        console.log("Estado manual guardado para el humidificador");
-      }).catch(console.error);
+        console.log("guardarEstadoManualHumidificador: estado_manual guardado:", estado);
+        calcularEstadoHumidificador();
     }).catch(console.error);
   }
 
-  // El resto del código para el control de humidificadores y otros dispositivos sigue igual
+  function guardarConfiguracionDPV() {
+    const humidificadorRef = ref(db, 'configuracion/humidificador');
+    update(humidificadorRef, { dpv_min: dpvMinInput.value, dpv_max: dpvMaxInput.value }).then(() => {
+        console.log("Configuración DPV guardada");
+        calcularEstadoHumidificador();
+    }).catch(console.error);
+  }
+
+  humidifierConfigMode.addEventListener('click', () => {
+    guardarConfiguracionDPV();
+  });
+
+  // Event listeners para el humidificador
+  humidifierManualOn.addEventListener('click', () => {
+    guardarEstadoManualHumidificador(true);
+  });
+
+  humidifierManualOff.addEventListener('click', () => {
+    guardarEstadoManualHumidificador(false);
+  });
+
+  // Llamar a calcularEstadoHumidificador() al cargar la página
+  document.addEventListener('DOMContentLoaded', () => {
+    calcularEstadoHumidificador();
+  });
+
+  // Escuchar cambios en configuracion/humidificador para recalcular el estado
+  const humidificadorRef = ref(db, 'configuracion/humidificador');
+  onValue(humidificadorRef, (snapshot) => {
+    const humidificadorConfig = snapshot.val();
+    if (humidificadorConfig) {
+      dpvMinInput.value = humidificadorConfig.dpv_min || 0;
+      dpvMaxInput.value = humidificadorConfig.dpv_max || 100;
+      humidifierConfigMode.textContent = humidificadorConfig.estado_manual !== null ? "Modo Manual" : "Modo Automático";
+    }
+  });
 </script>
+
 
 
 
