@@ -322,6 +322,24 @@
         });
     }
 
+    // *** MOVER LA DEFINICIÓN DE addControlListener AQUÍ ***
+    function addControlListener(buttonId, controlName, state) {
+        const button = document.getElementById(buttonId);
+        if (!button) {
+            console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
+            return;
+        }
+        button.addEventListener('click', () => {
+            actualizarControl(controlName, state)
+                .then(() => {
+                    console.log("Operación completada con éxito.");
+                })
+                .catch((error) => {
+                    console.error("Error en la operación:", error);
+                });
+        });
+    }
+
     // Event listeners para los botones manuales (CORREGIDOS)
     lightsManualOn.addEventListener('click', () => {
         guardarEstadoManual(true);
@@ -401,6 +419,7 @@
         addControlListener('ventilador-manual-on', 'ventilador', true);
     });
 </script>
+
 
 
 
