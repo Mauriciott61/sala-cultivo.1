@@ -371,13 +371,12 @@
         get(lucesRef).then((snapshot) => { // Obtener la configuración actual
             let lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {} }; // Inicializar si no existe
 
-            lucesConfigCompleta.dias = {}; // Reinicializar 'dias' SOLO UNA VEZ
-
+            // No reiniciar los días antes de agregar los nuevos horarios
             const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
 
             dias.forEach(dia => {
-                // *** CORRECCIÓN FINAL: CREAR SIEMPRE EL ARRAY, AUNQUE ESTÉ VACÍO ***
-                lucesConfigCompleta.dias[dia] = []; // Asegurar que el array exista SIEMPRE
+                // Crear un array vacío para el día, si no existe aún
+                lucesConfigCompleta.dias[dia] = lucesConfigCompleta.dias[dia] || []; 
 
                 let horarioIndex = 1;
 
@@ -430,6 +429,7 @@
         addControlListener('ventilador-manual-on', 'ventilador', true);
     });
 </script>
+
 
 
 
