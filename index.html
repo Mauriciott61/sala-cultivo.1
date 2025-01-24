@@ -207,228 +207,148 @@
         <p>&copy; 2025 Sala de Cultivo</p>
     </footer>
     <script type="module">
-    // Importaciones de Firebase  
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-    import { getDatabase, ref, onValue, set, push, get, update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+  // Importaciones de Firebase  
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-    // Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
-    const firebaseConfig = {
-        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk", // Reemplaza con tu API Key
-        authDomain: "sala-cultivo.firebaseapp.com",
-        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-        projectId: "sala-cultivo",
-        storageBucket: "sala-cultivo.firebasestorage.app",
-        messagingSenderId: "388469961230",
-        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-        measurementId: "G-72JQD67R0X"
-    };
+  // Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+    authDomain: "sala-cultivo.firebaseapp.com",
+    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+    projectId: "sala-cultivo",
+    storageBucket: "sala-cultivo.firebasestorage.app",
+    messagingSenderId: "388469961230",
+    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+    measurementId: "G-72JQD67R0X"
+  };
 
-    // Inicialización de Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getDatabase(app);
+  // Inicialización de Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    // Referencias a elementos HTML
-    const lightsStatus = document.getElementById('lights-status');
-    const lightsManualOn = document.getElementById('lights-manual-on');
-    const lightsManualOff = document.getElementById('lights-manual-off');
-    const lightsScheduleDisplay = document.getElementById('lights-schedule-display');
-    const saveLightsConfig = document.getElementById('save-lights-config');
+  // Referencias a elementos HTML
+  const lightsStatus = document.getElementById('lights-status');
+  const lightsManualOn = document.getElementById('lights-manual-on');
+  const lightsManualOff = document.getElementById('lights-manual-off');
+  const lightsScheduleDisplay = document.getElementById('lights-schedule-display');
+  const saveLightsConfig = document.getElementById('save-lights-config');
 
-    // Funciones
-    function obtenerEstadoActual() {
-        const controlesRef = ref(db, 'estado_actual/controles');
-        const sensoresRef = ref(db, 'estado_actual/sensores');
+  // Funciones
+  function obtenerEstadoActual() {
+    const controlesRef = ref(db, 'estado_actual/controles');
+    const sensoresRef = ref(db, 'estado_actual/sensores');
 
-        onValue(controlesRef, (snapshot) => {
-            const dataControles = snapshot.val();
-            if (dataControles) {
-                lightsStatus.textContent = dataControles.luces ? 'Prendidas' : 'Apagadas';
-            }
-        });
+    onValue(controlesRef, (snapshot) => {
+      const dataControles = snapshot.val();
+      if (dataControles) {
+        lightsStatus.textContent = dataControles.luces ? 'Prendidas' : 'Apagadas';
+      }
+    });
 
-        onValue(sensoresRef, (snapshot) => {
-            const dataSensores = snapshot.val();
-            if (dataSensores) {
-                document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
-                document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
-            }
-        });
-    }
+    onValue(sensoresRef, (snapshot) => {
+      const dataSensores = snapshot.val();
+      if (dataSensores) {
+        document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
+        document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
+      }
+    });
+  }
 
-    function actualizarControl(dispositivo, estado) {
-        const controlRef = ref(db, 'estado_actual/controles/' + dispositivo);
-        return set(controlRef, estado)
-            .then(() => {
-                agregarEventoHistorial(dispositivo, estado);
-            })
-            .catch((error) => {
-                console.error("Error actualizando control:", error);
+  // Cargar configuración de luces
+  function cargarConfiguracionLuces() {
+    const lucesRef = ref(db, 'configuracion/luces');
+    onValue(lucesRef, (snapshot) => {
+      const lucesConfig = snapshot.val();
+      if (lucesConfig) {
+        lightsStatus.textContent = lucesConfig.estado_manual === true ? 'Prendidas (Manual)' : lucesConfig.estado_manual === false ? 'Apagadas (Manual)' : 'Automático';
+        lightsScheduleDisplay.innerHTML = '';
+        if (lucesConfig.dias) {
+          for (const dia in lucesConfig.dias) {
+            const horariosDia = lucesConfig.dias[dia];
+            let horariosTexto = `${dia}: `;
+            horariosDia.forEach((horario, index) => {
+              horariosTexto += `${horario.inicio} - ${horario.fin}`;
+              if (index < horariosDia.length - 1) {
+                horariosTexto += ', ';
+              }
+
+              // Cargar valores en los inputs de time
+              const startInput = document.getElementById(`${dia}-start-${index + 1}`);
+              const endInput = document.getElementById(`${dia}-end-${index + 1}`);
+              if (startInput && endInput) {
+                startInput.value = horario.inicio;
+                endInput.value = horario.fin;
+              }
             });
-    }
-
-    function agregarEventoHistorial(dispositivo, estado) {
-        const eventosRef = ref(db, 'historial_eventos/eventos');
-        const evento = {
-            dispositivo: dispositivo,
-            responsable: "Usuario 1",
-            timestamp: new Date().toISOString(),
-            tipo: "cambio_control",
-            valor_actual: estado,
-            valor_anterior: estado === true ? false : true
-        };
-        push(eventosRef, evento)
-            .then(() => {
-                console.log("Evento agregado al historial");
-            })
-            .catch((error) => {
-                console.error("Error agregando evento:", error);
-            });
-    }
-
-    // Cargar configuración de luces
-    function cargarConfiguracionLuces() {
-        const lucesRef = ref(db, 'configuracion/luces');
-        onValue(lucesRef, (snapshot) => {
-            const lucesConfig = snapshot.val();
-            if (lucesConfig) {
-                lightsStatus.textContent = lucesConfig.estado_manual === true ? 'Prendidas (Manual)' : lucesConfig.estado_manual === false ? 'Apagadas (Manual)' : 'Automático';
-                lightsScheduleDisplay.innerHTML = '';
-                if (lucesConfig.dias) {
-                    for (const dia in lucesConfig.dias) {
-                        const horariosDia = lucesConfig.dias[dia];
-                        let horariosTexto = `${dia}: `;
-                        horariosDia.forEach((horario, index) => {
-                            horariosTexto += `${horario.inicio} - ${horario.fin}`;
-                            if (index < horariosDia.length - 1) {
-                                horariosTexto += ', ';
-                            }
-
-                            // Cargar valores en los inputs de time
-                            const startInput = document.getElementById(`${dia}-start-${index + 1}`);
-                            const endInput = document.getElementById(`${dia}-end-${index + 1}`);
-                            if (startInput && endInput) {
-                                startInput.value = horario.inicio;
-                                endInput.value = horario.fin;
-                            }
-                        });
-                        const p = document.createElement('p');
-                        p.textContent = horariosTexto;
-                        lightsScheduleDisplay.appendChild(p);
-                    }
-                }
-            }
-        });
-    }
-
-    // *** MOVER LA DEFINICIÓN DE addControlListener AQUÍ ***
-    function addControlListener(buttonId, controlName, state) {
-        const button = document.getElementById(buttonId);
-        if (!button) {
-            console.error(`ERROR: Botón con ID '${buttonId}' NO ENCONTRADO en el DOM.`);
-            return;
+            const p = document.createElement('p');
+            p.textContent = horariosTexto;
+            lightsScheduleDisplay.appendChild(p);
+          }
         }
-        button.addEventListener('click', () => {
-            actualizarControl(controlName, state)
-                .then(() => {
-                    console.log("Operación completada con éxito.");
-                })
-                .catch((error) => {
-                    console.error("Error en la operación:", error);
-                });
-        });
-    }
-
-    // Event listeners para los botones manuales (CORREGIDOS)
-    lightsManualOn.addEventListener('click', () => {
-        guardarEstadoManual(true);
+      }
     });
+  }
 
-    lightsManualOff.addEventListener('click', () => {
-        guardarEstadoManual(false);
-    });
+  // Event listener para guardar la configuración de las luces
+  saveLightsConfig.addEventListener('click', () => {
+    const lucesRef = ref(db, 'configuracion/luces');
 
-    function guardarEstadoManual(estado) {
-        const lucesRef = ref(db, 'configuracion/luces');
-        get(lucesRef).then((snapshot) => {
-            let lucesConfigCompleta = snapshot.exists() ? { ...snapshot.val() } : { estado: false, estado_manual: null, dias: {} };
+    get(lucesRef).then((snapshot) => { // Obtener la configuración actual
+      let lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {} }; // Inicializar si no existe
 
-            lucesConfigCompleta.estado_manual = estado;
-            set(lucesRef, lucesConfigCompleta).then(() => {
-                cargarConfiguracionLuces();
-                actualizarControl('luces', estado);
-            }).catch((error) => {
-                console.error("Error al guardar estado manual", error)
+      // No reiniciar los días antes de agregar los nuevos horarios
+      const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+
+      dias.forEach(dia => {
+        // Crear un array vacío para el día, si no existe aún
+        lucesConfigCompleta.dias[dia] = lucesConfigCompleta.dias[dia] || []; 
+
+        let horarioIndex = 1;
+
+        while (true) {
+          const startInputId = `${dia}-start-${horarioIndex}`;
+          const endInputId = `${dia}-end-${horarioIndex}`;
+          const startInput = document.getElementById(startInputId);
+          const endInput = document.getElementById(endInputId);
+
+          if (!startInput || !endInput) {
+            if (horarioIndex === 1) {
+              console.log(`No se encontraron inputs para ${dia}, se asume que no hay horarios.`);
+            }
+            break;
+          }
+
+          if (startInput.value && endInput.value) {
+            lucesConfigCompleta.dias[dia].push({
+              inicio: startInput.value,
+              fin: endInput.value
             });
-        });
-    }
+          } else if (startInput.value || endInput.value) {
+            console.error(`Error en los inputs de ${dia} (horario ${horarioIndex}): Falta hora de inicio o fin.`);
+          }
+          horarioIndex++;
+        }
+      });
 
-    // Event listener para guardar la configuración de las luces (CORREGIDO)
-    saveLightsConfig.addEventListener('click', () => {
-        const lucesRef = ref(db, 'configuracion/luces');
-
-        get(lucesRef).then((snapshot) => { // Obtener la configuración actual
-            let lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {} }; // Inicializar si no existe
-
-            // No reiniciar los días antes de agregar los nuevos horarios
-            const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
-
-            dias.forEach(dia => {
-                // Crear un array vacío para el día, si no existe aún
-                lucesConfigCompleta.dias[dia] = lucesConfigCompleta.dias[dia] || []; 
-
-                let horarioIndex = 1;
-
-                while (true) {
-                    const startInputId = `${dia}-start-${horarioIndex}`;
-                    const endInputId = `${dia}-end-${horarioIndex}`;
-                    const startInput = document.getElementById(startInputId);
-                    const endInput = document.getElementById(endInputId);
-
-                    if (!startInput || !endInput) {
-                        if (horarioIndex === 1) {
-                            console.log(`No se encontraron inputs para ${dia}, se asume que no hay horarios.`);
-                        }
-                        break;
-                    }
-
-                    if (startInput.value && endInput.value) {
-                        lucesConfigCompleta.dias[dia].push({
-                            inicio: startInput.value,
-                            fin: endInput.value
-                        });
-                    } else if (startInput.value || endInput.value) {
-                        console.error(`Error en los inputs de ${dia} (horario ${horarioIndex}): Falta hora de inicio o fin.`);
-                    }
-                    horarioIndex++;
-                }
-            });
-
-            set(lucesRef, lucesConfigCompleta)
-                .then(() => {
-                    console.log("Configuración de luces guardada correctamente en Firebase");
-                    cargarConfiguracionLuces();
-                })
-                .catch(error => {
-                    console.error("Error al guardar la configuración de luces en Firebase:", error);
-                });
+      set(lucesRef, lucesConfigCompleta)
+        .then(() => {
+          console.log("Configuración de luces guardada correctamente en Firebase");
+          cargarConfiguracionLuces();
+        })
+        .catch(error => {
+          console.error("Error al guardar la configuración de luces en Firebase:", error);
         });
     });
+  });
 
-    // Ejecutar todo dentro del DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', () => {
-        cargarConfiguracionLuces();
-        obtenerEstadoActual();
-        addControlListener('lights-manual-on', 'luces', true);
-        addControlListener('lights-manual-off', 'luces', false);
-        addControlListener('humidifier-manual-on', 'humidificador', true);
-        addControlListener('humidifier-manual-off', 'humidificador', false);
-        addControlListener('extractor-manual-on', 'extractor', true);
-        addControlListener('watering-manual-on', 'bomba_riego', true);
-        addControlListener('ventilador-manual-on', 'ventilador', true);
-    });
+  // Ejecutar todo dentro del DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarConfiguracionLuces();
+    obtenerEstadoActual();
+  });
 </script>
+
 
 
 
