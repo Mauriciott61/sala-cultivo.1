@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sala de Cultivo</title>
+    <title>Automatización de Sala de Cultivo</title>
     <style>
-        /* Tus estilos CSS */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -13,7 +12,6 @@
             background-color: #f4f4f9;
             color: #333;
         }
-
         header {
             background-color: #4caf50;
             color: white;
@@ -21,26 +19,18 @@
             padding: 1em 0;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-
-        header h1 {
-            font-size: 2.5em;
-            margin: 0;
-        }
-
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             padding: 20px;
         }
-
         .quadrant {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
         button {
             display: block;
             width: 100%;
@@ -54,19 +44,16 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-
         button:hover {
             background-color: #45a049;
         }
-
-        input[type="number"], input[type="text"] {
+        input[type="number"], input[type="text"], input[type="time"] {
             width: 100%;
             padding: 0.75em;
             margin: 0.5em 0;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
         footer {
             text-align: center;
             padding: 1em 0;
@@ -74,14 +61,28 @@
             color: white;
             margin-top: 2em;
         }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border-radius: 5px;
+            display: none;
+        }
+        canvas {
+            max-width: 100%;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Sala de Cultivo</h1>
+        <h1>Automatización de Sala de Cultivo</h1>
     </header>
 
     <main>
+        <!-- Sección de Datos en Tiempo Real -->
         <section id="realtime-data" class="center-section">
             <h2>Datos Actuales</h2>
             <p>Temperatura: <span id="temperature--span">--</span> °C</p>
@@ -90,380 +91,133 @@
             <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
         </section>
 
-        <div class="grid-container">
-            <section id="lights-config" class="quadrant">
-                <h2>Configuración de Luces</h2>
-                <p>Estado: <span id="lights-status">Apagadas</span></p>
-                <button id="lights-manual-on">Modo Manual Prendido</button>
-                <button id="lights-manual-off">Modo Manual Apagado</button>
+        <!-- Gráficos en Tiempo Real -->
+        <section class="quadrant">
+            <h2>Gráficos</h2>
+            <canvas id="chart"></canvas>
+        </section>
 
-                <h3>Horarios</h3>
-                <div id="lights-schedule-display"></div> <!-- Div para mostrar los horarios que vienen de firebase -->
-                <h3>Modificar Horarios</h3>
-                <ul id="lights-schedule">
-                    <li>Lunes: 
-                        <input type="time" id="lunes-start-1" value="10:00">
-                        <input type="time" id="lunes-end-1" value="14:00">
-                        <input type="time" id="lunes-start-2" value="18:00">
-                        <input type="time" id="lunes-end-2" value="22:00">
-                    </li>
-                    <li>Martes:
-                        <input type="time" id="martes-start-1" value="09:00">
-                        <input type="time" id="martes-end-1" value="13:00">
-                        <input type="time" id="martes-start-2" value="17:00">
-                        <input type="time" id="martes-end-2" value="21:00">
-                    </li>
-                    <li>Miércoles:
-                        <input type="time" id="miércoles-start-1" value="08:00">
-                        <input type="time" id="miércoles-end-1" value="12:00">
-                        <input type="time" id="miércoles-start-2" value="16:00">
-                        <input type="time" id="miércoles-end-2" value="20:00">
-                    </li>
-                    <li>Jueves:
-                        <input type="time" id="jueves-start-1" value="10:00">
-                        <input type="time" id="jueves-end-1" value="14:00">
-                        <input type="time" id="jueves-start-2" value="18:00">
-                        <input type="time" id="jueves-end-2" value="22:00">
-                    </li>
-                    <li>Viernes:
-                        <input type="time" id="viernes-start-1" value="09:00">
-                        <input type="time" id="viernes-end-1" value="13:00">
-                        <input type="time" id="viernes-start-2" value="17:00">
-                        <input type="time" id="viernes-end-2" value="21:00">
-                    </li>
-                    <li>Sábado:
-                        <input type="time" id="sábado-start-1" value="08:00">
-                        <input type="time" id="sábado-end-1" value="12:00">
-                        <input type="time" id="sábado-start-2" value="16:00">
-                        <input type="time" id="sábado-end-2" value="20:00">
-                    </li>
-                    <li>Domingo:
-                        <input type="time" id="domingo-start-1" value="10:00">
-                        <input type="time" id="domingo-end-1" value="14:00">
-                        <input type="time" id="domingo-start-2" value="18:00">
-                        <input type="time" id="domingo-end-2" value="22:00">
-                    </li>
-                </ul>
-                <button id="save-lights-config">Guardar Configuración Luces</button>
-            </section>
+        <!-- Configuración de Luces -->
+        <section id="lights-config" class="quadrant">
+            <h2>Configuración de Luces</h2>
+            <p>Estado: <span id="lights-status">Apagadas</span></p>
+            <button id="lights-manual-on">Modo Manual Prendido</button>
+            <button id="lights-manual-off">Modo Manual Apagado</button>
+            <h3>Horarios</h3>
+            <div id="lights-schedule-display"></div>
+            <h3>Modificar Horarios</h3>
+            <ul id="lights-schedule">
+                <!-- Horarios dinámicos -->
+            </ul>
+            <button id="save-lights-config">Guardar Configuración Luces</button>
+        </section>
 
-            <section id="humidifier-control" class="quadrant">
-                <h2>Humidificador</h2>
-                <p>Estado: <span id="humidifier-status">Apagado</span></p>
-                <button id="humidifier-manual-on">Modo Manual Prendido</button>
-                <button id="humidifier-manual-off">Modo Manual Apagado</button>
-                <button id="humidifier-config-mode">Modo Configurar</button>
-                <h3>Configuración DPV</h3>
-                <label for="dpv-min">Mínimo:</label>
-                <input type="number" id="dpv-min" placeholder="kPa">
-                <label for="dpv-max">Máximo:</label>
-                <input type="number" id="dpv-max" placeholder="kPa">
-            </section>
+        <!-- Control de Humidificador -->
+        <section id="humidifier-control" class="quadrant">
+            <h2>Humidificador</h2>
+            <p>Estado: <span id="humidifier-status">Apagado</span></p>
+            <button id="humidifier-manual-on">Modo Manual Prendido</button>
+            <button id="humidifier-manual-off">Modo Manual Apagado</button>
+            <h3>Configuración DPV</h3>
+            <label for="dpv-min">Mínimo:</label>
+            <input type="number" id="dpv-min" placeholder="kPa">
+            <label for="dpv-max">Máximo:</label>
+            <input type="number" id="dpv-max" placeholder="kPa">
+            <button id="humidifier-config-mode">Guardar Configuración DPV</button>
+        </section>
 
-            <section id="extractor-control" class="quadrant">
-                <h2>Extractor</h2>
-                <p>Estado: <span id="extractor-status">Apagado</span></p>
-                <button id="extractor-manual-on">Modo Manual Prendido</button>
-                <label for="extractor-on-time">Tiempo Prendido:</label>
-                <input type="number" id="extractor-on-time" placeholder="Segundos">
-                <label for="extractor-interval">Intervalo:</label>
-                <input type="number" id="extractor-interval" placeholder="Minutos">
-                <label for="extractor-humidity-limit">Humedad Máxima:</label>
-                <input type="number" id="extractor-humidity-limit" placeholder="%">
-            </section>
+        <!-- Control de Extractor -->
+        <section id="extractor-control" class="quadrant">
+            <h2>Extractor</h2>
+            <p>Estado: <span id="extractor-status">Apagado</span></p>
+            <button id="extractor-manual-on">Modo Manual Prendido</button>
+            <label for="extractor-on-time">Tiempo Prendido:</label>
+            <input type="number" id="extractor-on-time" placeholder="Segundos">
+            <label for="extractor-interval">Intervalo:</label>
+            <input type="number" id="extractor-interval" placeholder="Minutos">
+            <label for="extractor-humidity-limit">Humedad Máxima:</label>
+            <input type="number" id="extractor-humidity-limit" placeholder="%">
+        </section>
 
-            <section id="watering-control" class="quadrant">
-                <h2>Riego</h2>
-                <p>Estado: <span id="watering-status">Apagado</span></p>
-                <button id="watering-manual-on">Modo Manual Prendido</button> <!-- ¡BOTÓN AGREGADO! -->
-                <h3>Configuración</h3>
-                <label for="soil-moisture-min">Humedad Mínima:</label>
-                <input type="number" id="soil-moisture-min" placeholder="%">
-                <label for="watering-time">Tiempo de Riego:</label>
-                <input type="number" id="watering-time" placeholder="Segundos">
-                <label for="watering-interval">Intervalo:</label>
-                <input type="number" id="watering-interval" placeholder="Minutos">
-                <label for="soil-moisture-max">Humedad Máxima:</label>
-                <input type="number" id="soil-moisture-max" placeholder="%">
-            </section>
-            
-            <section id="ventilador-control" class="quadrant">
-                <h2>Ventilador</h2>
-                <p>Estado: <span id="ventilador-status">Apagado</span></p>
-                <button id="ventilador-manual-on">Modo Manual Prendido</button>
-            </section>
-        </div>
-
-        <section id="detailed-status">
-            <h2>Estado Detallado</h2>
-            <p>Luces: <span id="lights-runtime--span">--</span> horas prendidas.</p>
-            <p>Humidificador: <span id="humidifier-runtime--span">--</span> horas prendido.</p>
-            <p>Extractor: <span id="extractor-runtime--span">--</span> ciclos completados.</p>
-            <p>Riego: <span id="watering-runtime--span">--</span> ciclos completados.</p>
-            <p>Ventilador: <span id="ventilador-runtime--span">--</span> ciclos completados.</p>
+        <!-- Control de Riego -->
+        <section id="watering-control" class="quadrant">
+            <h2>Riego</h2>
+            <p>Estado: <span id="watering-status">Apagado</span></p>
+            <button id="watering-manual-on">Modo Manual Prendido</button>
+            <h3>Configuración</h3>
+            <label for="soil-moisture-min">Humedad Mínima:</label>
+            <input type="number" id="soil-moisture-min" placeholder="%">
+            <label for="watering-time">Tiempo de Riego:</label>
+            <input type="number" id="watering-time" placeholder="Segundos">
+            <label for="watering-interval">Intervalo:</label>
+            <input type="number" id="watering-interval" placeholder="Minutos">
+            <label for="soil-moisture-max">Humedad Máxima:</label>
+            <input type="number" id="soil-moisture-max" placeholder="%">
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 Sala de Cultivo. Todos los derechos reservados.</p>
+        <p>&copy; 2025 Automatización de Sala de Cultivo. Todos los derechos reservados.</p>
     </footer>
 
-   <script type="module"> 
-  // Importaciones de Firebase  
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    <!-- Notificaciones -->
+    <div id="notification" class="notification"></div>
 
-  // Configuración de Firebase (¡REEMPLAZA CON TUS DATOS!)
-  const firebaseConfig = {
-    apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-    authDomain: "sala-cultivo.firebaseapp.com",
-    databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-    projectId: "sala-cultivo",
-    storageBucket: "sala-cultivo.firebasestorage.app",
-    messagingSenderId: "388469961230",
-    appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-    measurementId: "G-72JQD67R0X"
-  };
+    <!-- Firebase y Chart.js -->
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  // Inicialización de Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    <!-- Código JavaScript -->
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+            authDomain: "sala-cultivo.firebaseapp.com",
+            databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+            projectId: "sala-cultivo",
+            storageBucket: "sala-cultivo.firebasestorage.app",
+            messagingSenderId: "388469961230",
+            appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+            measurementId: "G-72JQD67R0X"
+        };
 
-  // Referencias a elementos HTML de las luces
-  const lightsStatus = document.getElementById('lights-status');
-  const lightsManualOn = document.getElementById('lights-manual-on');
-  const lightsManualOff = document.getElementById('lights-manual-off');
-  const lightsScheduleDisplay = document.getElementById('lights-schedule-display');
-  const saveLightsConfig = document.getElementById('save-lights-config');
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-  // Funciones para luces
-  function obtenerEstadoActual() {
-    const controlesRef = ref(db, 'estado_actual/controles');
-    const sensoresRef = ref(db, 'estado_actual/sensores');
-
-    onValue(controlesRef, (snapshot) => {
-      const dataControles = snapshot.val();
-      if (dataControles) {
-        lightsStatus.textContent = dataControles.luces ? 'Prendidas' : 'Apagadas';
-      }
-    });
-
-    onValue(sensoresRef, (snapshot) => {
-      const dataSensores = snapshot.val();
-      if (dataSensores) {
-        document.getElementById('temperature--span').textContent = dataSensores.temperatura || '--';
-        document.getElementById('humidity--span').textContent = dataSensores.humedad_ambiente || '--';
-      }
-    });
-  }
-
-  function cargarConfiguracionLuces() {
-    const lucesRef = ref(db, 'configuracion/luces');
-    onValue(lucesRef, (snapshot) => {
-      const lucesConfig = snapshot.val();
-      if (lucesConfig) {
-        lightsStatus.textContent = lucesConfig.estado_manual === true ? 'Prendidas (Manual)' : lucesConfig.estado_manual === false ? 'Apagadas (Manual)' : 'Automático';
-        lightsScheduleDisplay.innerHTML = '';
-        if (lucesConfig.dias) {
-          for (const dia in lucesConfig.dias) {
-            const horariosDia = lucesConfig.dias[dia];
-            let horariosTexto = `${dia}: `;
-            horariosDia.forEach((horario, index) => {
-              horariosTexto += `${horario.inicio} - ${horario.fin}`;
-              if (index < horariosDia.length - 1) {
-                horariosTexto += ', ';
-              }
-
-              // Cargar valores en los inputs de time
-              const startInput = document.getElementById(`${dia}-start-${index + 1}`);
-              const endInput = document.getElementById(`${dia}-end-${index + 1}`);
-              if (startInput && endInput) {
-                startInput.value = horario.inicio;
-                endInput.value = horario.fin;
-              }
-            });
-            const p = document.createElement('p');
-            p.textContent = horariosTexto;
-            lightsScheduleDisplay.appendChild(p);
-          }
-        }
-      }
-    });
-  }
-
-  // Nueva función para guardar el estado manual de las luces
-  function guardarEstadoManual(estado) {
-    const lucesEstadoManualRef = ref(db, 'configuracion/luces/estado_manual');
-    const lucesEstadoRef = ref(db, 'configuracion/luces/estado');
-
-    set(lucesEstadoManualRef, estado).then(() => {
-      set(lucesEstadoRef, estado).then(() => {
-        console.log("Estado manual guardado");
-      }).catch(console.error);
-    }).catch(console.error);
-  }
-
-  // Event listener para guardar la configuración de las luces
-  saveLightsConfig.addEventListener('click', () => {
-    const lucesRef = ref(db, 'configuracion/luces');
-
-    get(lucesRef).then((snapshot) => {
-      const lucesConfigCompleta = snapshot.val() || { estado_manual: null, dias: {}, estado: false };
-      const dias = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
-      const updates = {};
-
-      dias.forEach(dia => {
-        updates[`dias/${dia}`] = []; // Limpiar el array
-
-        let horarioIndex = 1;
-        while (true) {
-          const startInput = document.getElementById(`${dia}-start-${horarioIndex}`);
-          const endInput = document.getElementById(`${dia}-end-${horarioIndex}`);
-
-          if (!startInput || !endInput) break;
-
-          if (startInput.value && endInput.value) {
-            updates[`dias/${dia}`].push({ inicio: startInput.value, fin: endInput.value });
-          } else if (startInput.value || endInput.value) {
-            console.error(`Error en inputs ${dia} ${horarioIndex}: Debes ingresar ambos valores (inicio y fin).`);
-          }
-          horarioIndex++;
-        }
-      });
-
-      update(lucesRef, updates).then(() => {
-        console.log("Configuración guardada");
-        cargarConfiguracionLuces(); // Recargar la interfaz para mostrar los cambios
-      }).catch(console.error);
-    });
-  });
-
-  // Escucha los cambios en el estado manual
-  lightsManualOn.addEventListener('click', () => {
-    guardarEstadoManual(true); // Cambia a manual ON
-    lightsStatus.textContent = 'Prendidas (Manual)';
-  });
-
-  lightsManualOff.addEventListener('click', () => {
-    guardarEstadoManual(false); // Cambia a manual OFF
-    lightsStatus.textContent = 'Apagadas (Manual)';
-  });
-
-  // Ejecutar todo dentro del DOMContentLoaded
-  document.addEventListener('DOMContentLoaded', () => {
-    cargarConfiguracionLuces();
-    obtenerEstadoActual();
-  });
-
-  // --- Parte del humidificador ---
-
-  // Referencias a elementos HTML del humidificador
-  const humidifierStatus = document.getElementById('humidifier-status');
-  const humidifierManualOn = document.getElementById('humidifier-manual-on');
-  const humidifierManualOff = document.getElementById('humidifier-manual-off');
-  const dpvMinInput = document.getElementById('dpv-min');
-  const dpvMaxInput = document.getElementById('dpv-max');
-  const humidifierConfigMode = document.getElementById('humidifier-config-mode');
-
-  // Función para calcular el estado del humidificador
-  function calcularEstadoHumidificador() {
-    const humidificadorRef = ref(db, 'configuracion/humidificador');
-    get(humidificadorRef).then((snapshot) => {
-        const humidificadorConfig = snapshot.val();
-        if (humidificadorConfig) {
-            let estadoHumidificador;
-            const dpv = parseFloat(document.getElementById('dpv--span').textContent) || 0; // Obtener DPV de la interfaz
-
-            if (humidificadorConfig.estado_manual !== null) {
-                estadoHumidificador = humidificadorConfig.estado_manual;
-                console.log("calcularEstadoHumidificador: Modo manual, estado:", estadoHumidificador);
-            } else {
-                // Modo automático (basado en DPV)
-                if (dpv >= humidificadorConfig.dpv_max) {
-                    estadoHumidificador = false; // Apagar si DPV es mayor o igual al máximo
-                } else if (dpv <= humidificadorConfig.dpv_min) {
-                    estadoHumidificador = true; // Prender si DPV es menor o igual al mínimo
-                } else {
-                    estadoHumidificador = false; // Mantener apagado si está entre los valores
+        // Configuración de Chart.js
+        const ctx = document.getElementById('chart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: [],
+                    borderColor: '#4caf50',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Tiempo' } },
+                    y: { display: true, title: { display: true, text: 'Valor' } }
                 }
-                console.log("calcularEstadoHumidificador: Modo automático, estado:", estadoHumidificador, "DPV:", dpv, "min:", humidificadorConfig.dpv_min, "max:", humidificadorConfig.dpv_max);
             }
+        });
 
-            const humidificadorActualRef = ref(db, 'estado_actual/controles/humidificador');
-            set(humidificadorActualRef, estadoHumidificador).then(() => {
-                console.log("calcularEstadoHumidificador: estado guardado en estado_actual/controles/humidificador:", estadoHumidificador);
-                humidifierStatus.textContent = estadoHumidificador ? 'Prendido (Manual)' : 'Apagado (Manual)';
-            }).catch(console.error);
+        // Función para mostrar notificaciones
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 3000);
         }
-    });
-  }
 
-  // Funciones para guardar el estado manual del humidificador
-  function guardarEstadoManualHumidificador(estado) {
-    const humidificadorEstadoManualRef = ref(db, 'configuracion/humidificador/estado_manual');
-    set(humidificadorEstadoManualRef, estado).then(() => {
-        console.log("guardarEstadoManualHumidificador: estado_manual guardado:", estado);
-        calcularEstadoHumidificador();
-    }).catch(console.error);
-  }
-
-  function guardarConfiguracionDPV() {
-    const humidificadorRef = ref(db, 'configuracion/humidificador');
-    update(humidificadorRef, { dpv_min: dpvMinInput.value, dpv_max: dpvMaxInput.value }).then(() => {
-        console.log("Configuración DPV guardada");
-        calcularEstadoHumidificador();
-    }).catch(console.error);
-  }
-
-  humidifierConfigMode.addEventListener('click', () => {
-    guardarConfiguracionDPV();
-  });
-
-  // Event listeners para el humidificador
-  humidifierManualOn.addEventListener('click', () => {
-    guardarEstadoManualHumidificador(true);
-  });
-
-  humidifierManualOff.addEventListener('click', () => {
-    guardarEstadoManualHumidificador(false);
-  });
-
-  // Llamar a calcularEstadoHumidificador() al cargar la página
-  document.addEventListener('DOMContentLoaded', () => {
-    calcularEstadoHumidificador();
-  });
-
-  // Escuchar cambios en configuracion/humidificador para recalcular el estado
-  const humidificadorRef = ref(db, 'configuracion/humidificador');
-  onValue(humidificadorRef, (snapshot) => {
-    const humidificadorConfig = snapshot.val();
-    if (humidificadorConfig) {
-      dpvMinInput.value = humidificadorConfig.dpv_min || 0;
-      dpvMaxInput.value = humidificadorConfig.dpv_max || 100;
-      humidifierConfigMode.textContent = humidificadorConfig.estado_manual !== null ? "Modo Manual" : "Modo Automático";
-    }
-  });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
+        // Lógica de Firebase y controles
+        // (Aquí iría el código para manejar luces, humidificador, extractor, riego, etc.)
+    </script>
 </body>
 </html>
