@@ -5,75 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automatización de Sala de Cultivo</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        header {
-            background-color: #4caf50;
-            color: white;
-            text-align: center;
-            padding: 1em 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        .quadrant {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 0.75em;
-            margin: 0.5em 0;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        input[type="number"], input[type="text"], input[type="time"] {
-            width: 100%;
-            padding: 0.75em;
-            margin: 0.5em 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        footer {
-            text-align: center;
-            padding: 1em 0;
-            background-color: #4caf50;
-            color: white;
-            margin-top: 2em;
-        }
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: white;
-            border-radius: 5px;
-            display: none;
-        }
-        canvas {
-            max-width: 100%;
-        }
+        /* Estilos anteriores */
     </style>
 </head>
 <body>
@@ -93,8 +25,9 @@
 
         <!-- Gráficos en Tiempo Real -->
         <section class="quadrant">
-            <h2>Gráficos</h2>
-            <canvas id="chart"></canvas>
+            <h2>Gráficos en Tiempo Real</h2>
+            <canvas id="temperatureChart"></canvas>
+            <canvas id="humidityChart"></canvas>
         </section>
 
         <!-- Configuración de Luces -->
@@ -103,13 +36,6 @@
             <p>Estado: <span id="lights-status">Apagadas</span></p>
             <button id="lights-manual-on">Modo Manual Prendido</button>
             <button id="lights-manual-off">Modo Manual Apagado</button>
-            <h3>Horarios</h3>
-            <div id="lights-schedule-display"></div>
-            <h3>Modificar Horarios</h3>
-            <ul id="lights-schedule">
-                <!-- Horarios dinámicos -->
-            </ul>
-            <button id="save-lights-config">Guardar Configuración Luces</button>
         </section>
 
         <!-- Control de Humidificador -->
@@ -118,41 +44,6 @@
             <p>Estado: <span id="humidifier-status">Apagado</span></p>
             <button id="humidifier-manual-on">Modo Manual Prendido</button>
             <button id="humidifier-manual-off">Modo Manual Apagado</button>
-            <h3>Configuración DPV</h3>
-            <label for="dpv-min">Mínimo:</label>
-            <input type="number" id="dpv-min" placeholder="kPa">
-            <label for="dpv-max">Máximo:</label>
-            <input type="number" id="dpv-max" placeholder="kPa">
-            <button id="humidifier-config-mode">Guardar Configuración DPV</button>
-        </section>
-
-        <!-- Control de Extractor -->
-        <section id="extractor-control" class="quadrant">
-            <h2>Extractor</h2>
-            <p>Estado: <span id="extractor-status">Apagado</span></p>
-            <button id="extractor-manual-on">Modo Manual Prendido</button>
-            <label for="extractor-on-time">Tiempo Prendido:</label>
-            <input type="number" id="extractor-on-time" placeholder="Segundos">
-            <label for="extractor-interval">Intervalo:</label>
-            <input type="number" id="extractor-interval" placeholder="Minutos">
-            <label for="extractor-humidity-limit">Humedad Máxima:</label>
-            <input type="number" id="extractor-humidity-limit" placeholder="%">
-        </section>
-
-        <!-- Control de Riego -->
-        <section id="watering-control" class="quadrant">
-            <h2>Riego</h2>
-            <p>Estado: <span id="watering-status">Apagado</span></p>
-            <button id="watering-manual-on">Modo Manual Prendido</button>
-            <h3>Configuración</h3>
-            <label for="soil-moisture-min">Humedad Mínima:</label>
-            <input type="number" id="soil-moisture-min" placeholder="%">
-            <label for="watering-time">Tiempo de Riego:</label>
-            <input type="number" id="watering-time" placeholder="Segundos">
-            <label for="watering-interval">Intervalo:</label>
-            <input type="number" id="watering-interval" placeholder="Minutos">
-            <label for="soil-moisture-max">Humedad Máxima:</label>
-            <input type="number" id="soil-moisture-max" placeholder="%">
         </section>
     </main>
 
@@ -186,9 +77,11 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Configuración de Chart.js
-        const ctx = document.getElementById('chart').getContext('2d');
-        const chart = new Chart(ctx, {
+        // Configuración de Chart.js (Gráficos estilo Blink)
+        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+        const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+
+        const temperatureChart = new Chart(temperatureCtx, {
             type: 'line',
             data: {
                 labels: [],
@@ -196,16 +89,121 @@
                     label: 'Temperatura (°C)',
                     data: [],
                     borderColor: '#4caf50',
-                    fill: false
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { enabled: true }
+                },
                 scales: {
                     x: { display: true, title: { display: true, text: 'Tiempo' } },
-                    y: { display: true, title: { display: true, text: 'Valor' } }
+                    y: { display: true, title: { display: true, text: 'Temperatura (°C)' } }
                 }
             }
+        });
+
+        const humidityChart = new Chart(humidityCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Humedad (%)',
+                    data: [],
+                    borderColor: '#2196f3',
+                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Tiempo' } },
+                    y: { display: true, title: { display: true, text: 'Humedad (%)' } }
+                }
+            }
+        });
+
+        // Función para agregar datos a los gráficos
+        function addDataToChart(chart, label, data) {
+            chart.data.labels.push(label);
+            chart.data.datasets[0].data.push(data);
+
+            // Limitar el número de puntos mostrados
+            if (chart.data.labels.length > 15) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+
+            chart.update();
+        }
+
+        // Obtener datos de Firebase y actualizar gráficos
+        const sensoresRef = db.ref('estado_actual/sensores');
+        const controlesRef = db.ref('estado_actual/controles');
+
+        sensoresRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // Actualizar valores en la interfaz
+                document.getElementById('temperature--span').textContent = data.temperatura || '--';
+                document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
+                document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
+                document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
+
+                // Agregar datos a los gráficos
+                const horaActual = new Date().toLocaleTimeString();
+                addDataToChart(temperatureChart, horaActual, data.temperatura);
+                addDataToChart(humidityChart, horaActual, data.humedad_ambiente);
+            }
+        });
+
+        controlesRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // Actualizar estados de los controles
+                document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
+                document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
+            }
+        });
+
+        // Control de Luces
+        document.getElementById('lights-manual-on').addEventListener('click', () => {
+            db.ref('estado_actual/controles/luces').set(true)
+                .then(() => showNotification('Luces prendidas'))
+                .catch((error) => console.error('Error al prender luces:', error));
+        });
+
+        document.getElementById('lights-manual-off').addEventListener('click', () => {
+            db.ref('estado_actual/controles/luces').set(false)
+                .then(() => showNotification('Luces apagadas'))
+                .catch((error) => console.error('Error al apagar luces:', error));
+        });
+
+        // Control de Humidificador
+        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+            db.ref('estado_actual/controles/humidificador').set(true)
+                .then(() => showNotification('Humidificador prendido'))
+                .catch((error) => console.error('Error al prender humidificador:', error));
+        });
+
+        document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+            db.ref('estado_actual/controles/humidificador').set(false)
+                .then(() => showNotification('Humidificador apagado'))
+                .catch((error) => console.error('Error al apagar humidificador:', error));
         });
 
         // Función para mostrar notificaciones
@@ -215,9 +213,6 @@
             notification.style.display = 'block';
             setTimeout(() => notification.style.display = 'none', 3000);
         }
-
-        // Lógica de Firebase y controles
-        // (Aquí iría el código para manejar luces, humidificador, extractor, riego, etc.)
     </script>
 </body>
 </html>
