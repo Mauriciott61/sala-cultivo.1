@@ -5,7 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automatización de Sala de Cultivo</title>
     <style>
-        /* Estilos anteriores */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 1em 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .quadrant {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 0.75em;
+            margin: 0.5em 0;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input[type="number"], input[type="text"], input[type="time"] {
+            width: 100%;
+            padding: 0.75em;
+            margin: 0.5em 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        footer {
+            text-align: center;
+            padding: 1em 0;
+            background-color: #4caf50;
+            color: white;
+            margin-top: 2em;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border-radius: 5px;
+            display: none;
+        }
+        canvas {
+            max-width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +112,22 @@
             <p>Estado: <span id="humidifier-status">Apagado</span></p>
             <button id="humidifier-manual-on">Modo Manual Prendido</button>
             <button id="humidifier-manual-off">Modo Manual Apagado</button>
+        </section>
+
+        <!-- Control de Extractor -->
+        <section id="extractor-control" class="quadrant">
+            <h2>Extractor</h2>
+            <p>Estado: <span id="extractor-status">Apagado</span></p>
+            <button id="extractor-manual-on">Modo Manual Prendido</button>
+            <button id="extractor-manual-off">Modo Manual Apagado</button>
+        </section>
+
+        <!-- Control de Riego -->
+        <section id="watering-control" class="quadrant">
+            <h2>Riego</h2>
+            <p>Estado: <span id="watering-status">Apagado</span></p>
+            <button id="watering-manual-on">Modo Manual Prendido</button>
+            <button id="watering-manual-off">Modo Manual Apagado</button>
         </section>
     </main>
 
@@ -177,6 +261,8 @@
                 // Actualizar estados de los controles
                 document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
                 document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
+                document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
+                document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
             }
         });
 
@@ -204,6 +290,32 @@
             db.ref('estado_actual/controles/humidificador').set(false)
                 .then(() => showNotification('Humidificador apagado'))
                 .catch((error) => console.error('Error al apagar humidificador:', error));
+        });
+
+        // Control de Extractor
+        document.getElementById('extractor-manual-on').addEventListener('click', () => {
+            db.ref('estado_actual/controles/extractor').set(true)
+                .then(() => showNotification('Extractor prendido'))
+                .catch((error) => console.error('Error al prender extractor:', error));
+        });
+
+        document.getElementById('extractor-manual-off').addEventListener('click', () => {
+            db.ref('estado_actual/controles/extractor').set(false)
+                .then(() => showNotification('Extractor apagado'))
+                .catch((error) => console.error('Error al apagar extractor:', error));
+        });
+
+        // Control de Riego
+        document.getElementById('watering-manual-on').addEventListener('click', () => {
+            db.ref('estado_actual/controles/bomba_riego').set(true)
+                .then(() => showNotification('Riego prendido'))
+                .catch((error) => console.error('Error al prender riego:', error));
+        });
+
+        document.getElementById('watering-manual-off').addEventListener('click', () => {
+            db.ref('estado_actual/controles/bomba_riego').set(false)
+                .then(() => showNotification('Riego apagado'))
+                .catch((error) => console.error('Error al apagar riego:', error));
         });
 
         // Función para mostrar notificaciones
