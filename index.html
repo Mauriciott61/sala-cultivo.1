@@ -139,38 +139,8 @@
     <div id="notification" class="notification"></div>
 
     <!-- Firebase y Chart.js -->
-   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-
-    // Configuración de Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-        authDomain: "sala-cultivo.firebaseapp.com",
-        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-        projectId: "sala-cultivo",
-        storageBucket: "sala-cultivo.firebasestorage.app",
-        messagingSenderId: "388469961230",
-        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-        measurementId: "G-72JQD67R0X"
-    };
-
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Referencia a la base de datos
-    const dbRef = ref(db, 'prueba');
-
-    // Escribir datos en Firebase
-    set(dbRef, { mensaje: "Conexión exitosa" })
-        .then(() => console.log("✅ Datos escritos en Firebase"))
-        .catch((error) => console.error("❌ Error al escribir en Firebase:", error));
-
-    // Leer datos en Firebase
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        console.log("📡 Datos recibidos desde Firebase:", data);
-    });
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Código JavaScript -->
@@ -190,21 +160,20 @@
         // Inicializar Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
         // Referencia a la base de datos
-const dbRef = db.ref('prueba');
+        const dbRef = db.ref('prueba');
 
-// Escribir datos en Firebase
-dbRef.set({ mensaje: "Conexión exitosa" })
-    .then(() => console.log("✅ Datos escritos en Firebase"))
-    .catch((error) => console.error("❌ Error al escribir en Firebase:", error));
+        // Escribir datos en Firebase
+        dbRef.set({ mensaje: "Conexión exitosa" })
+            .then(() => console.log("✅ Datos escritos en Firebase"))
+            .catch((error) => console.error("❌ Error al escribir en Firebase:", error));
 
-// Leer datos en Firebase
-dbRef.on('value', (snapshot) => {
-    const data = snapshot.val();
-    console.log("📡 Datos recibidos desde Firebase:", data);
-});
-
-        
+        // Leer datos en Firebase
+        dbRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            console.log("📡 Datos recibidos desde Firebase:", data);
+        });
 
         // Configuración de Chart.js (Gráficos estilo Blink)
         const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
