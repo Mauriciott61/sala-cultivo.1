@@ -71,19 +71,6 @@
             border-radius: 5px;
             display: none;
         }
-        .chart-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .chart-container canvas {
-            max-width: 100%;
-            height: 250px; /* Altura fija para los gráficos */
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
     </style>
 </head>
 <body>
@@ -99,15 +86,6 @@
             <p>Humedad Ambiente: <span id="humidity--span">--</span> %</p>
             <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
             <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
-        </section>
-
-        <!-- Gráficos en Tiempo Real -->
-        <section class="quadrant">
-            <h2>Gráficos en Tiempo Real</h2>
-            <div class="chart-container">
-                <canvas id="temperatureChart"></canvas>
-                <canvas id="humidityChart"></canvas>
-            </div>
         </section>
 
         <!-- Configuración de Luces -->
@@ -150,10 +128,9 @@
     <!-- Notificaciones -->
     <div id="notification" class="notification"></div>
 
-    <!-- Firebase y Chart.js -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Código JavaScript -->
     <script>
@@ -187,81 +164,7 @@
             console.log("📡 Datos recibidos desde Firebase:", data);
         });
 
-        // Configuración de Chart.js (Gráficos estilo Blink)
-        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
-        const humidityCtx = document.getElementById('humidityChart').getContext('2d');
-
-        const temperatureChart = new Chart(temperatureCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Temperatura (°C)',
-                    data: [],
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: { enabled: true }
-                },
-                scales: {
-                    x: { display: true, title: { display: true, text: 'Tiempo' } },
-                    y: { display: true, title: { display: true, text: 'Temperatura (°C)' } }
-                }
-            }
-        });
-
-        const humidityChart = new Chart(humidityCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Humedad (%)',
-                    data: [],
-                    borderColor: '#2196f3',
-                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: { enabled: true }
-                },
-                scales: {
-                    x: { display: true, title: { display: true, text: 'Tiempo' } },
-                    y: { display: true, title: { display: true, text: 'Humedad (%)' } }
-                }
-            }
-        });
-
-        // Función para agregar datos a los gráficos
-        function addDataToChart(chart, label, data) {
-            chart.data.labels.push(label);
-            chart.data.datasets[0].data.push(data);
-
-            // Limitar el número de puntos mostrados
-            if (chart.data.labels.length > 15) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
-            }
-
-            chart.update();
-        }
-
-        // Obtener datos de Firebase y actualizar gráficos
+        // Obtener datos de Firebase y actualizar la interfaz
         const sensoresRef = db.ref('estado_actual/sensores');
         const controlesRef = db.ref('estado_actual/controles');
 
@@ -273,11 +176,6 @@
                 document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
                 document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
                 document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
-
-                // Agregar datos a los gráficos
-                const horaActual = new Date().toLocaleTimeString();
-                addDataToChart(temperatureChart, horaActual, data.temperatura);
-                addDataToChart(humidityChart, horaActual, data.humedad_ambiente);
             }
         });
 
