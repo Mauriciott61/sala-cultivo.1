@@ -244,29 +244,28 @@
         });
 
         // Guardar programa de luces
-document.getElementById('lights-save-program').addEventListener('click', () => {
-    const day = document.getElementById('light-day').value;
-    const onTime = document.getElementById('light-on-time').value;
-    const offTime = document.getElementById('light-off-time').value;
+        document.getElementById('lights-save-program').addEventListener('click', () => {
+            const day = document.getElementById('light-day').value;
+            const onTime = document.getElementById('light-on-time').value;
+            const offTime = document.getElementById('light-off-time').value;
 
-    // Crear un nuevo objeto con los horarios
-    const newSchedule = {
-        inicio: onTime,
-        fin: offTime
-    };
+            // Crear un nuevo objeto con los horarios
+            const newSchedule = {
+                inicio: onTime,
+                fin: offTime
+            };
 
-    // Guardar en la base de datos bajo la ruta correcta
-    configRef.child('luces/dias').child(day).push(newSchedule)
-        .then(() => {
-            showNotification('Programa de luces guardado');
-            console.log('Horario guardado:', newSchedule);
-        })
-        .catch((error) => {
-            console.error('Error al guardar programa de luces:', error);
-            showNotification('Error al guardar programa de luces');
+            // Guardar en la base de datos bajo la ruta correcta
+            configRef.child('luces/dias').child(day).push(newSchedule)
+                .then(() => {
+                    showNotification('Programa de luces guardado');
+                    console.log('Horario guardado:', newSchedule);
+                })
+                .catch((error) => {
+                    console.error('Error al guardar programa de luces:', error);
+                    showNotification('Error al guardar programa de luces');
+                });
         });
-});
-Explicación de los Cam
 
         // Control de Humidificador
         document.getElementById('humidifier-manual-on').addEventListener('click', () => {
