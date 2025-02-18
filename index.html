@@ -174,6 +174,9 @@
         </section>
     </main>
 
+    <footer>
+        <p>&copy; 2025 Automatización de Sala de Cultivo. Todos los derechos reservados.</p>
+    </footer>
 
     <!-- Notificaciones -->
     <div id="notification" class="notification"></div>
@@ -262,6 +265,76 @@
                     console.error('Error al guardar programa de luces:', error);
                     showNotification('Error al guardar programa de luces');
                 });
+        });
+
+        // Control de Humidificador
+        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+            controlesRef.child('humidificador').set(true)
+                .then(() => showNotification('Humidificador prendido'))
+                .catch((error) => console.error('Error al prender humidificador:', error));
+        });
+
+        document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+            controlesRef.child('humidificador').set(false)
+                .then(() => showNotification('Humidificador apagado'))
+                .catch((error) => console.error('Error al apagar humidificador:', error));
+        });
+
+        // Guardar programa de humidificador
+        document.getElementById('humidifier-save-program').addEventListener('click', () => {
+            const dpvMin = parseFloat(document.getElementById('dpv-min').value);
+            const dpvMax = parseFloat(document.getElementById('dpv-max').value);
+
+            configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
+                .then(() => showNotification('Programa de humidificador guardado'))
+                .catch((error) => console.error('Error al guardar programa de humidificador:', error));
+        });
+
+        // Control de Extractor
+        document.getElementById('extractor-manual-on').addEventListener('click', () => {
+            controlesRef.child('extractor').set(true)
+                .then(() => showNotification('Extractor prendido'))
+                .catch((error) => console.error('Error al prender extractor:', error));
+        });
+
+        document.getElementById('extractor-manual-off').addEventListener('click', () => {
+            controlesRef.child('extractor').set(false)
+                .then(() => showNotification('Extractor apagado'))
+                .catch((error) => console.error('Error al apagar extractor:', error));
+        });
+
+        // Guardar programa de extractor
+        document.getElementById('extractor-save-program').addEventListener('click', () => {
+            const interval = parseInt(document.getElementById('extractor-interval').value);
+            const duration = parseInt(document.getElementById('extractor-duration').value);
+
+            configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
+                .then(() => showNotification('Programa de extractor guardado'))
+                .catch((error) => console.error('Error al guardar programa de extractor:', error));
+        });
+
+        // Control de Riego
+        document.getElementById('watering-manual-on').addEventListener('click', () => {
+            controlesRef.child('bomba_riego').set(true)
+                .then(() => showNotification('Riego prendido'))
+                .catch((error) => console.error('Error al prender riego:', error));
+        });
+
+        document.getElementById('watering-manual-off').addEventListener('click', () => {
+            controlesRef.child('bomba_riego').set(false)
+                .then(() => showNotification('Riego apagado'))
+                .catch((error) => console.error('Error al apagar riego:', error));
+        });
+
+        // Guardar programa de riego
+        document.getElementById('watering-save-program').addEventListener('click', () => {
+            const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
+            const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
+            const wateringDuration = parseInt(document.getElementById('watering-duration').value);
+
+            configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
+                .then(() => showNotification('Programa de riego guardado'))
+                .catch((error) => console.error('Error al guardar programa de riego:', error));
         });
 
         // Función para mostrar notificaciones
