@@ -47,7 +47,7 @@
         button:hover {
             background-color: #45a049;
         }
-        input[type="number"], input[type="text"], input[type="time"] {
+        input[type="number"], input[type="text"], input[type="time"], select {
             width: 100%;
             padding: 0.75em;
             margin: 0.5em 0;
@@ -70,6 +70,11 @@
             color: white;
             border-radius: 5px;
             display: none;
+        }
+        .program-section {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
         }
     </style>
 </head>
@@ -94,6 +99,25 @@
             <p>Estado: <span id="lights-status">Apagadas</span></p>
             <button id="lights-manual-on">Modo Manual Prendido</button>
             <button id="lights-manual-off">Modo Manual Apagado</button>
+
+            <div class="program-section">
+                <h3>Programación de Luces</h3>
+                <label for="light-day">Día:</label>
+                <select id="light-day">
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes</option>
+                    <option value="Miércoles">Miércoles</option>
+                    <option value="Jueves">Jueves</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sábado">Sábado</option>
+                    <option value="Domingo">Domingo</option>
+                </select>
+                <label for="light-on-time">Hora de encendido:</label>
+                <input type="time" id="light-on-time">
+                <label for="light-off-time">Hora de apagado:</label>
+                <input type="time" id="light-off-time">
+                <button id="lights-save-program">Guardar Programa</button>
+            </div>
         </section>
 
         <!-- Control de Humidificador -->
@@ -102,6 +126,15 @@
             <p>Estado: <span id="humidifier-status">Apagado</span></p>
             <button id="humidifier-manual-on">Modo Manual Prendido</button>
             <button id="humidifier-manual-off">Modo Manual Apagado</button>
+
+            <div class="program-section">
+                <h3>Programación de Humidificador</h3>
+                <label for="dpv-min">DPV Mínimo (kPa):</label>
+                <input type="number" id="dpv-min" step="0.1" min="0">
+                <label for="dpv-max">DPV Máximo (kPa):</label>
+                <input type="number" id="dpv-max" step="0.1" min="0">
+                <button id="humidifier-save-program">Guardar Programa</button>
+            </div>
         </section>
 
         <!-- Control de Extractor -->
@@ -110,6 +143,15 @@
             <p>Estado: <span id="extractor-status">Apagado</span></p>
             <button id="extractor-manual-on">Modo Manual Prendido</button>
             <button id="extractor-manual-off">Modo Manual Apagado</button>
+
+            <div class="program-section">
+                <h3>Programación de Extractor</h3>
+                <label for="extractor-interval">Intervalo de encendido (minutos):</label>
+                <input type="number" id="extractor-interval" min="1">
+                <label for="extractor-duration">Duración de encendido (minutos):</label>
+                <input type="number" id="extractor-duration" min="1">
+                <button id="extractor-save-program">Guardar Programa</button>
+            </div>
         </section>
 
         <!-- Control de Riego -->
@@ -118,6 +160,17 @@
             <p>Estado: <span id="watering-status">Apagado</span></p>
             <button id="watering-manual-on">Modo Manual Prendido</button>
             <button id="watering-manual-off">Modo Manual Apagado</button>
+
+            <div class="program-section">
+                <h3>Programación de Riego</h3>
+                <label for="soil-moisture-min">Humedad Mínima del Suelo (%):</label>
+                <input type="number" id="soil-moisture-min" min="0" max="100">
+                <label for="soil-moisture-max">Humedad Máxima del Suelo (%):</label>
+                <input type="number" id="soil-moisture-max" min="0" max="100">
+                <label for="watering-duration">Duración de Riego (minutos):</label>
+                <input type="number" id="watering-duration" min="1">
+                <button id="watering-save-program">Guardar Programa</button>
+            </div>
         </section>
     </main>
 
@@ -203,6 +256,17 @@
                 .catch((error) => console.error('Error al apagar luces:', error));
         });
 
+        // Guardar programa de luces
+        document.getElementById('lights-save-program').addEventListener('click', () => {
+            const day = document.getElementById('light-day').value;
+            const onTime = document.getElementById('light-on-time').value;
+            const offTime = document.getElementById('light-off-time').value;
+
+            db.ref('programas/luces').set({ day, onTime, offTime })
+                .then(() => showNotification('Programa de luces guardado'))
+                .catch((error) => console.error('Error al guardar programa de luces:', error));
+        });
+
         // Control de Humidificador
         document.getElementById('humidifier-manual-on').addEventListener('click', () => {
             db.ref('estado_actual/controles/humidificador').set(true)
@@ -214,6 +278,16 @@
             db.ref('estado_actual/controles/humidificador').set(false)
                 .then(() => showNotification('Humidificador apagado'))
                 .catch((error) => console.error('Error al apagar humidificador:', error));
+        });
+
+        // Guardar programa de humidificador
+        document.getElementById('humidifier-save-program').addEventListener('click', () => {
+            const dpvMin = parseFloat(document.getElementById('dpv-min').value);
+            const dpvMax = parseFloat(document.getElementById('dpv-max').value);
+
+            db.ref('programas/humidificador').set({ dpvMin, dpvMax })
+                .then(() => showNotification('Programa de humidificador guardado'))
+                .catch((error) => console.error('Error al guardar programa de humidificador:', error));
         });
 
         // Control de Extractor
@@ -229,6 +303,16 @@
                 .catch((error) => console.error('Error al apagar extractor:', error));
         });
 
+        // Guardar programa de extractor
+        document.getElementById('extractor-save-program').addEventListener('click', () => {
+            const interval = parseInt(document.getElementById('extractor-interval').value);
+            const duration = parseInt(document.getElementById('extractor-duration').value);
+
+            db.ref('programas/extractor').set({ interval, duration })
+                .then(() => showNotification('Programa de extractor guardado'))
+                .catch((error) => console.error('Error al guardar programa de extractor:', error));
+        });
+
         // Control de Riego
         document.getElementById('watering-manual-on').addEventListener('click', () => {
             db.ref('estado_actual/controles/bomba_riego').set(true)
@@ -240,6 +324,17 @@
             db.ref('estado_actual/controles/bomba_riego').set(false)
                 .then(() => showNotification('Riego apagado'))
                 .catch((error) => console.error('Error al apagar riego:', error));
+        });
+
+        // Guardar programa de riego
+        document.getElementById('watering-save-program').addEventListener('click', () => {
+            const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
+            const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
+            const wateringDuration = parseInt(document.getElementById('watering-duration').value);
+
+            db.ref('programas/riego').set({ soilMoistureMin, soilMoistureMax, wateringDuration })
+                .then(() => showNotification('Programa de riego guardado'))
+                .catch((error) => console.error('Error al guardar programa de riego:', error));
         });
 
         // Función para mostrar notificaciones
