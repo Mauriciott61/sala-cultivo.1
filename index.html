@@ -160,6 +160,21 @@
         // Inicializar Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        // Referencia a la base de datos
+const dbRef = db.ref('prueba');
+
+// Escribir datos en Firebase
+dbRef.set({ mensaje: "Conexión exitosa" })
+    .then(() => console.log("✅ Datos escritos en Firebase"))
+    .catch((error) => console.error("❌ Error al escribir en Firebase:", error));
+
+// Leer datos en Firebase
+dbRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    console.log("📡 Datos recibidos desde Firebase:", data);
+});
+
+        
 
         // Configuración de Chart.js (Gráficos estilo Blink)
         const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
