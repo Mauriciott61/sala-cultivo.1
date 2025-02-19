@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automatización de Sala de Cultivo</title>
@@ -93,6 +94,20 @@
             <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
         </section>
 
+        <!-- Sección de Gráficos -->
+        <section id="charts-section" class="quadrant">
+    <h2>Gráficos de Variables</h2>
+    <div class="chart-container">
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="humidityChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="dpvChart"></canvas>
+    </div>
+         </section>
+
         <!-- Configuración de Luces -->
         <section id="lights-config" class="quadrant">
             <h2>Configuración de Luces</h2>
@@ -180,6 +195,7 @@
 
     <!-- Notificaciones -->
     <div id="notification" class="notification"></div>
+    
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -336,6 +352,62 @@
                 .then(() => showNotification('Programa de riego guardado'))
                 .catch((error) => console.error('Error al guardar programa de riego:', error));
         });
+        // Configuración de los gráficos
+const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
+const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
+const dpvChartCtx = document.getElementById('dpvChart').getContext('2d');
+
+const temperatureChart = new Chart(temperatureChartCtx, {
+    type: 'line',
+    data: {
+        labels: [], // Tiempo
+        datasets: [{
+            label: 'Temperatura (°C)',
+            data: [],
+            borderColor: '#ff6384',
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: { display: true, title: { display: true, text: 'Tiempo' } },
+            y: { display: true, title: { display: true, text: 'Temperatura (°C)' } }
+        }
+    }
+});
+
+const humidityChart = new Chart(humidityChartCtx, {
+    type: 'line',
+    data: {
+        labels: [], // Tiempo
+        datasets: [{
+            label: 'Humedad Ambiente (%)',
+            data: [],
+            borderColor: '#36a2eb',
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: { display: true, title: { display: true, text: 'Tiempo' } },
+            y: { display: true, title: { display: true, text: 'Humedad (%)' } }
+        }
+    }
+});
+
+const dpvChart = new Chart(dpvChartCtx, {
+    type: 'line',
+    data: {
+        labels: [], // Tiempo
+        datasets: [{
+            label: 'Déficit de Presión de Vapor (kPa)',
+            data: [],
+            borderColor: '#4bc0c0',
+            fill: false
+        }]
+   
 
         // Función para mostrar notificaciones
         function showNotification(message) {
