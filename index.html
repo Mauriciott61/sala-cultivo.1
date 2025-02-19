@@ -220,194 +220,103 @@
         const db = firebase.database();
 
         // Referencias a la base de datos
-        const configRef = db.ref('configuracion');
-        const estadoActualRef = db.ref('estado_actual');
         const sensoresRef = db.ref('estado_actual/sensores');
-        const controlesRef = db.ref('estado_actual/controles');
 
-        // Actualizar datos en tiempo real
+        // Configuración de los gráficos
+        const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
+        const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
+        const dpvChartCtx = document.getElementById('dpvChart').getContext('2d');
+
+        const temperatureChart = new Chart(temperatureChartCtx, {
+            type: 'line',
+            data: {
+                labels: [], // Tiempo
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: [],
+                    borderColor: '#ff6384',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Tiempo' } },
+                    y: { display: true, title: { display: true, text: 'Temperatura (°C)' } }
+                }
+            }
+        });
+
+        const humidityChart = new Chart(humidityChartCtx, {
+            type: 'line',
+            data: {
+                labels: [], // Tiempo
+                datasets: [{
+                    label: 'Humedad Ambiente (%)',
+                    data: [],
+                    borderColor: '#36a2eb',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Tiempo' } },
+                    y: { display: true, title: { display: true, text: 'Humedad (%)' } }
+                }
+            }
+        });
+
+        const dpvChart = new Chart(dpvChartCtx, {
+            type: 'line',
+            data: {
+                labels: [], // Tiempo
+                datasets: [{
+                    label: 'Déficit de Presión de Vapor (kPa)',
+                    data: [],
+                    borderColor: '#4bc0c0',
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { display: true, title: { display: true, text: 'Tiempo' } },
+                    y: { display: true, title: { display: true, text: 'DPV (kPa)' } }
+                }
+            }
+        });
+
+        // Actualizar datos en tiempo real y gráficos
         sensoresRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                // Actualizar datos en la interfaz
                 document.getElementById('temperature--span').textContent = data.temperatura || '--';
                 document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
                 document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
                 document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
+
+                // Obtener la hora actual
+                const time = new Date().toLocaleTimeString();
+
+                // Actualizar gráficos
+                updateChart(temperatureChart, time, data.temperatura);
+                updateChart(humidityChart, time, data.humedad_ambiente);
+                updateChart(dpvChart, time, data.deficit_presion_vapor);
             }
         });
 
-        controlesRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
-                document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
-                document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
-                document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
+        // Función para actualizar gráficos
+        function updateChart(chart, label, data) {
+            if (chart.data.labels.length > 10) {
+                chart.data.labels.shift(); // Eliminar la etiqueta más antigua
+                chart.data.datasets[0].data.shift(); // Eliminar el dato más antiguo
             }
-        });
-
-        // Control de Luces
-        document.getElementById('lights-manual-on').addEventListener('click', () => {
-            controlesRef.child('luces').set(true)
-                .then(() => showNotification('Luces prendidas'))
-                .catch((error) => console.error('Error al prender luces:', error));
-        });
-
-        document.getElementById('lights-manual-off').addEventListener('click', () => {
-            controlesRef.child('luces').set(false)
-                .then(() => showNotification('Luces apagadas'))
-                .catch((error) => console.error('Error al apagar luces:', error));
-        });
-
-        // Guardar programa de luces (sobrescribiendo horarios existentes)
-        document.getElementById('lights-save-program').addEventListener('click', () => {
-            const day = document.getElementById('light-day').value;
-            const onTime = document.getElementById('light-on-time').value;
-            const offTime = document.getElementById('light-off-time').value;
-
-            // Crear un nuevo objeto con los horarios
-            const newSchedule = {
-                inicio: onTime,
-                fin: offTime
-            };
-
-            // Guardar en la base de datos bajo la ruta correcta (sobrescribiendo horarios existentes)
-            configRef.child('luces/dias').child(day).set(newSchedule)
-                .then(() => {
-                    showNotification('Programa de luces guardado');
-                    console.log('Horario guardado:', newSchedule);
-                })
-                .catch((error) => {
-                    console.error('Error al guardar programa de luces:', error);
-                    showNotification('Error al guardar programa de luces');
-                });
-        });
-
-        // Control de Humidificador
-        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
-            controlesRef.child('humidificador').set(true)
-                .then(() => showNotification('Humidificador prendido'))
-                .catch((error) => console.error('Error al prender humidificador:', error));
-        });
-
-        document.getElementById('humidifier-manual-off').addEventListener('click', () => {
-            controlesRef.child('humidificador').set(false)
-                .then(() => showNotification('Humidificador apagado'))
-                .catch((error) => console.error('Error al apagar humidificador:', error));
-        });
-
-        // Guardar programa de humidificador
-        document.getElementById('humidifier-save-program').addEventListener('click', () => {
-            const dpvMin = parseFloat(document.getElementById('dpv-min').value);
-            const dpvMax = parseFloat(document.getElementById('dpv-max').value);
-
-            configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
-                .then(() => showNotification('Programa de humidificador guardado'))
-                .catch((error) => console.error('Error al guardar programa de humidificador:', error));
-        });
-
-        // Control de Extractor
-        document.getElementById('extractor-manual-on').addEventListener('click', () => {
-            controlesRef.child('extractor').set(true)
-                .then(() => showNotification('Extractor prendido'))
-                .catch((error) => console.error('Error al prender extractor:', error));
-        });
-
-        document.getElementById('extractor-manual-off').addEventListener('click', () => {
-            controlesRef.child('extractor').set(false)
-                .then(() => showNotification('Extractor apagado'))
-                .catch((error) => console.error('Error al apagar extractor:', error));
-        });
-
-        // Guardar programa de extractor
-        document.getElementById('extractor-save-program').addEventListener('click', () => {
-            const interval = parseInt(document.getElementById('extractor-interval').value);
-            const duration = parseInt(document.getElementById('extractor-duration').value);
-
-            configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
-                .then(() => showNotification('Programa de extractor guardado'))
-                .catch((error) => console.error('Error al guardar programa de extractor:', error));
-        });
-
-        // Control de Riego
-        document.getElementById('watering-manual-on').addEventListener('click', () => {
-            controlesRef.child('bomba_riego').set(true)
-                .then(() => showNotification('Riego prendido'))
-                .catch((error) => console.error('Error al prender riego:', error));
-        });
-
-        document.getElementById('watering-manual-off').addEventListener('click', () => {
-            controlesRef.child('bomba_riego').set(false)
-                .then(() => showNotification('Riego apagado'))
-                .catch((error) => console.error('Error al apagar riego:', error));
-        });
-
-        // Guardar programa de riego
-        document.getElementById('watering-save-program').addEventListener('click', () => {
-            const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
-            const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
-            const wateringDuration = parseInt(document.getElementById('watering-duration').value);
-
-            configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
-                .then(() => showNotification('Programa de riego guardado'))
-                .catch((error) => console.error('Error al guardar programa de riego:', error));
-        });
-        // Configuración de los gráficos
-const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
-const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
-const dpvChartCtx = document.getElementById('dpvChart').getContext('2d');
-
-const temperatureChart = new Chart(temperatureChartCtx, {
-    type: 'line',
-    data: {
-        labels: [], // Tiempo
-        datasets: [{
-            label: 'Temperatura (°C)',
-            data: [],
-            borderColor: '#ff6384',
-            fill: false
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            x: { display: true, title: { display: true, text: 'Tiempo' } },
-            y: { display: true, title: { display: true, text: 'Temperatura (°C)' } }
+            chart.data.labels.push(label); // Agregar nueva etiqueta
+            chart.data.datasets[0].data.push(data); // Agregar nuevo dato
+            chart.update(); // Actualizar el gráfico
         }
-    }
-});
-
-const humidityChart = new Chart(humidityChartCtx, {
-    type: 'line',
-    data: {
-        labels: [], // Tiempo
-        datasets: [{
-            label: 'Humedad Ambiente (%)',
-            data: [],
-            borderColor: '#36a2eb',
-            fill: false
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            x: { display: true, title: { display: true, text: 'Tiempo' } },
-            y: { display: true, title: { display: true, text: 'Humedad (%)' } }
-        }
-    }
-});
-
-const dpvChart = new Chart(dpvChartCtx, {
-    type: 'line',
-    data: {
-        labels: [], // Tiempo
-        datasets: [{
-            label: 'Déficit de Presión de Vapor (kPa)',
-            data: [],
-            borderColor: '#4bc0c0',
-            fill: false
-        }]
-   
 
         // Función para mostrar notificaciones
         function showNotification(message) {
