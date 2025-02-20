@@ -96,17 +96,17 @@
 
         <!-- Sección de Gráficos -->
         <section id="charts-section" class="quadrant">
-    <h2>Gráficos de Variables</h2>
-    <div class="chart-container">
-        <canvas id="temperatureChart"></canvas>
-    </div>
-    <div class="chart-container">
-        <canvas id="humidityChart"></canvas>
-    </div>
-    <div class="chart-container">
-        <canvas id="dpvChart"></canvas>
-    </div>
-         </section>
+            <h2>Gráficos de Variables</h2>
+            <div class="chart-container">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="humidityChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="dpvChart"></canvas>
+            </div>
+        </section>
 
         <!-- Configuración de Luces -->
         <section id="lights-config" class="quadrant">
@@ -165,6 +165,8 @@
                 <input type="number" id="extractor-interval" min="1">
                 <label for="extractor-duration">Duración de encendido (minutos):</label>
                 <input type="number" id="extractor-duration" min="1">
+                <label for="extractor-humidity-threshold">Humedad Máxima (%):</label>
+                <input type="number" id="extractor-humidity-threshold" min="0" max="100">
                 <button id="extractor-save-program">Guardar Programa</button>
             </div>
         </section>
@@ -195,7 +197,6 @@
 
     <!-- Notificaciones -->
     <div id="notification" class="notification"></div>
-    
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -221,6 +222,10 @@
 
         // Referencias a la base de datos
         const sensoresRef = db.ref('estado_actual/sensores');
+        const lightsRef = db.ref('control/luces');
+        const humidifierRef = db.ref('control/humidificador');
+        const extractorRef = db.ref('control/extractor');
+        const wateringRef = db.ref('control/riego');
 
         // Configuración de los gráficos
         const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
@@ -304,6 +309,28 @@
                 updateChart(temperatureChart, time, data.temperatura);
                 updateChart(humidityChart, time, data.humedad_ambiente);
                 updateChart(dpvChart, time, data.deficit_presion_vapor);
+
+                // Control automático del extractor basado en la humedad
+                const humidityThreshold = parseFloat(document.getElementById('extractor-humidity-threshold').value);
+                if (!isNaN(humidityThreshold) {
+                    if (data.humedad_ambiente > humidityThreshold) {
+                        const interval = parseFloat(document.getElementById('extractor-interval').value) * 60000; // Convertir a milisegundos
+                        const duration = parseFloat(document.getElementById('extractor-duration').value) * 60000; // Convertir a milisegundos
+
+                        if (!isNaN(interval) {
+                            extractorRef.set({ estado: 'encendido' })
+                                .then(() => {
+                                    showNotification('Extractor encendido por humedad alta');
+                                    setTimeout(() => {
+                                        extractorRef.set({ estado: 'apagado' })
+                                            .then(() => showNotification('Extractor apagado'))
+                                            .catch((error) => console.error('Error al apagar extractor:', error));
+                                    }, duration);
+                                })
+                                .catch((error) => console.error('Error al encender extractor:', error));
+                        }
+                    }
+                }
             }
         });
 
@@ -325,6 +352,145 @@
             notification.style.display = 'block';
             setTimeout(() => notification.style.display = 'none', 3000);
         }
+
+        // Control de Luces
+        document.getElementById('lights-manual-on').addEventListener('click', () => {
+            lightsRef.set({ estado: 'encendido' })
+                .then(() => showNotification('Luces encendidas'))
+                .catch((error) => {
+                    console.error('Error al encender luces:', error);
+                    showNotification('Error al encender luces');
+                });
+        });
+
+        document.getElementById('lights-manual-off').addEventListener('click', () => {
+            lightsRef.set({ estado: 'apagado' })
+                .then(() => showNotification('Luces apagadas'))
+                .catch((error) => {
+                    console.error('Error al apagar luces:', error);
+                    showNotification('Error al apagar luces');
+                });
+        });
+
+        document.getElementById('lights-save-program').addEventListener('click', () => {
+            const day = document.getElementById('light-day').value;
+            const onTime = document.getElementById('light-on-time').value;
+            const offTime = document.getElementById('light-off-time').value;
+
+            lightsRef.child('programa').set({ dia: day, encendido: onTime, apagado: offTime })
+                .then(() => showNotification('Programa de luces guardado'))
+                .catch((error) => {
+                    console.error('Error al guardar programa de luces:', error);
+                    showNotification('Error al guardar programa de luces');
+                });
+        });
+
+        // Control de Humidificador
+        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+            humidifierRef.set({ estado: 'encendido' })
+                .then(() => showNotification('Humidificador encendido'))
+                .catch((error) => {
+                    console.error('Error al encender humidificador:', error);
+                    showNotification('Error al encender humidificador');
+                });
+        });
+
+        document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+            humidifierRef.set({ estado: 'apagado' })
+                .then(() => showNotification('Humidificador apagado'))
+                .catch((error) => {
+                    console.error('Error al apagar humidificador:', error);
+                    showNotification('Error al apagar humidificador');
+                });
+        });
+
+        document.getElementById('humidifier-save-program').addEventListener('click', () => {
+            const dpvMin = parseFloat(document.getElementById('dpv-min').value);
+            const dpvMax = parseFloat(document.getElementById('dpv-max').value);
+
+            if (!isNaN(dpvMin) {
+                humidifierRef.child('programa').set({ dpv_min: dpvMin, dpv_max: dpvMax })
+                    .then(() => showNotification('Programa de humidificador guardado'))
+                    .catch((error) => {
+                        console.error('Error al guardar programa de humidificador:', error);
+                        showNotification('Error al guardar programa de humidificador');
+                    });
+            } else {
+                showNotification('Valores de DPV no válidos');
+            }
+        });
+
+        // Control de Extractor
+        document.getElementById('extractor-manual-on').addEventListener('click', () => {
+            extractorRef.set({ estado: 'encendido' })
+                .then(() => showNotification('Extractor encendido'))
+                .catch((error) => {
+                    console.error('Error al encender extractor:', error);
+                    showNotification('Error al encender extractor');
+                });
+        });
+
+        document.getElementById('extractor-manual-off').addEventListener('click', () => {
+            extractorRef.set({ estado: 'apagado' })
+                .then(() => showNotification('Extractor apagado'))
+                .catch((error) => {
+                    console.error('Error al apagar extractor:', error);
+                    showNotification('Error al apagar extractor');
+                });
+        });
+
+        document.getElementById('extractor-save-program').addEventListener('click', () => {
+            const interval = parseFloat(document.getElementById('extractor-interval').value);
+            const duration = parseFloat(document.getElementById('extractor-duration').value);
+            const humidityThreshold = parseFloat(document.getElementById('extractor-humidity-threshold').value);
+
+            if (!isNaN(interval) {
+                extractorRef.child('programa').set({ intervalo: interval, duracion: duration, humedad_maxima: humidityThreshold })
+                    .then(() => showNotification('Programa de extractor guardado'))
+                    .catch((error) => {
+                        console.error('Error al guardar programa de extractor:', error);
+                        showNotification('Error al guardar programa de extractor');
+                    });
+            } else {
+                showNotification('Valores de intervalo o duración no válidos');
+            }
+        });
+
+        // Control de Riego
+        document.getElementById('watering-manual-on').addEventListener('click', () => {
+            wateringRef.set({ estado: 'encendido' })
+                .then(() => showNotification('Riego encendido'))
+                .catch((error) => {
+                    console.error('Error al encender riego:', error);
+                    showNotification('Error al encender riego');
+                });
+        });
+
+        document.getElementById('watering-manual-off').addEventListener('click', () => {
+            wateringRef.set({ estado: 'apagado' })
+                .then(() => showNotification('Riego apagado'))
+                .catch((error) => {
+                    console.error('Error al apagar riego:', error);
+                    showNotification('Error al apagar riego');
+                });
+        });
+
+        document.getElementById('watering-save-program').addEventListener('click', () => {
+            const soilMoistureMin = parseFloat(document.getElementById('soil-moisture-min').value);
+            const soilMoistureMax = parseFloat(document.getElementById('soil-moisture-max').value);
+            const wateringDuration = parseFloat(document.getElementById('watering-duration').value);
+
+            if (!isNaN(soilMoistureMin) {
+                wateringRef.child('programa').set({ humedad_min: soilMoistureMin, humedad_max: soilMoistureMax, duracion: wateringDuration })
+                    .then(() => showNotification('Programa de riego guardado'))
+                    .catch((error) => {
+                        console.error('Error al guardar programa de riego:', error);
+                        showNotification('Error al guardar programa de riego');
+                    });
+            } else {
+                showNotification('Valores de humedad o duración no válidos');
+            }
+        });
     </script>
 </body>
 </html>
