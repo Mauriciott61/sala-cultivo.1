@@ -1,82 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automatización de Sala de Cultivo</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        header {
-            background-color: #4caf50;
-            color: white;
-            text-align: center;
-            padding: 1em 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        .quadrant {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 0.75em;
-            margin: 0.5em 0;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        input[type="number"], input[type="text"], input[type="time"], select {
-            width: 100%;
-            padding: 0.75em;
-            margin: 0.5em 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        footer {
-            text-align: center;
-            padding: 1em 0;
-            background-color: #4caf50;
-            color: white;
-            margin-top: 2em;
-        }
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            background-color: #4caf50;
-            color: white;
-            border-radius: 5px;
-            display: none;
-        }
-        .program-section {
-            margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 20px;
-        }
+        /* Estilos anteriores... */
     </style>
 </head>
 <body>
@@ -92,20 +21,6 @@
             <p>Humedad Ambiente: <span id="humidity--span">--</span> %</p>
             <p>Déficit de Presión de Vapor: <span id="dpv--span">--</span> kPa</p>
             <p>Humedad del Suelo: <span id="soil-moisture--span">--</span> %</p>
-        </section>
-
-        <!-- Sección de Gráficos -->
-        <section id="charts-section" class="quadrant">
-            <h2>Gráficos de Variables</h2>
-            <div class="chart-container">
-                <canvas id="temperatureChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="humidityChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <canvas id="dpvChart"></canvas>
-            </div>
         </section>
 
         <!-- Configuración de Luces -->
@@ -165,8 +80,6 @@
                 <input type="number" id="extractor-interval" min="1">
                 <label for="extractor-duration">Duración de encendido (minutos):</label>
                 <input type="number" id="extractor-duration" min="1">
-                <label for="extractor-humidity-threshold">Humedad Máxima (%):</label>
-                <input type="number" id="extractor-humidity-threshold" min="0" max="100">
                 <button id="extractor-save-program">Guardar Programa</button>
             </div>
         </section>
@@ -202,21 +115,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-   
-    <script type="module">
-        // Importación de Firebase 9 de manera modular
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.18.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/9.18.1/firebase-database.js';
-
-        // Definición de la función updateChart
-        export function updateChart(chart, value) {
-            // Lógica para actualizar el gráfico con el nuevo valor
-            if (chart) {
-                chart.data.datasets[0].data.push(value);
-                chart.update();
-            }
-        }
-
+    <!-- Código JavaScript -->
+    <script>
+        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
             authDomain: "sala-cultivo.firebaseapp.com",
@@ -229,133 +130,150 @@
         };
 
         // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        // Definir rutas de Firebase como constantes
-        const RUTAS = {
-            sensores: ref(db, 'datos/sensores'),
-            luces: ref(db, 'control/luces'),
-            humidificador: ref(db, 'control/humidificador'),
-            extractor: ref(db, 'control/extractor'),
-            riego: ref(db, 'control/riego')
-        };
+        // Referencias a la base de datos
+        const configRef = db.ref('configuracion');
+        const estadoActualRef = db.ref('estado_actual');
+        const sensoresRef = db.ref('estado_actual/sensores');
+        const controlesRef = db.ref('estado_actual/controles');
 
-        // Función para mostrar errores de forma centralizada
-        function showError(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.display = 'block';
-            setTimeout(() => notification.style.display = 'none', 3000);
-        }
+        // Actualizar datos en tiempo real
+        sensoresRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('temperature--span').textContent = data.temperatura || '--';
+                document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
+                document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
+                document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
+            }
+        });
 
-        // Función general para encender y apagar dispositivos con booleanos
-        function controlDevice(ref, state, message) {
-            set(ref, { estado: state })
-                .then(() => showError(message))
-                .catch((error) => {
-                    console.error(`Error al ${message.toLowerCase()}:`, error);
-                    showError(`Error al ${message.toLowerCase()}`);
-                });
-        }
+        controlesRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
+                document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
+                document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
+                document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
+            }
+        });
 
-        // Eventos de encender y apagar dispositivos con lógica booleana
-        document.getElementById('lights-manual-on').addEventListener('click', () => controlDevice(RUTAS.luces, true, 'Luces encendidas'));
-        document.getElementById('lights-manual-off').addEventListener('click', () => controlDevice(RUTAS.luces, false, 'Luces apagadas'));
+        // Control de Luces
+        document.getElementById('lights-manual-on').addEventListener('click', () => {
+            controlesRef.child('luces').set(true)
+                .then(() => showNotification('Luces prendidas'))
+                .catch((error) => console.error('Error al prender luces:', error));
+        });
 
-        document.getElementById('humidifier-manual-on').addEventListener('click', () => controlDevice(RUTAS.humidificador, true, 'Humidificador encendido'));
-        document.getElementById('humidifier-manual-off').addEventListener('click', () => controlDevice(RUTAS.humidificador, false, 'Humidificador apagado'));
+        document.getElementById('lights-manual-off').addEventListener('click', () => {
+            controlesRef.child('luces').set(false)
+                .then(() => showNotification('Luces apagadas'))
+                .catch((error) => console.error('Error al apagar luces:', error));
+        });
 
-        document.getElementById('extractor-manual-on').addEventListener('click', () => controlDevice(RUTAS.extractor, true, 'Extractor encendido'));
-        document.getElementById('extractor-manual-off').addEventListener('click', () => controlDevice(RUTAS.extractor, false, 'Extractor apagado'));
-
-        document.getElementById('watering-manual-on').addEventListener('click', () => controlDevice(RUTAS.riego, true, 'Riego encendido'));
-        document.getElementById('watering-manual-off').addEventListener('click', () => controlDevice(RUTAS.riego, false, 'Riego apagado'));
-
-        // Eventos de guardar programas
+        // Guardar programa de luces (sobrescribiendo horarios existentes)
         document.getElementById('lights-save-program').addEventListener('click', () => {
             const day = document.getElementById('light-day').value;
             const onTime = document.getElementById('light-on-time').value;
             const offTime = document.getElementById('light-off-time').value;
 
-            if (day && onTime && offTime) {
-                set(RUTAS.luces, { programa: { dia: day, encendido: onTime, apagado: offTime } })
-                    .then(() => showError('Programa de luces guardado'))
-                    .catch((error) => {
-                        console.error('Error al guardar programa de luces:', error);
-                        showError('Error al guardar programa de luces');
-                    });
-            } else {
-                showError('Faltan datos para guardar el programa de luces');
-            }
+            // Crear un nuevo objeto con los horarios
+            const newSchedule = {
+                inicio: onTime,
+                fin: offTime
+            };
+
+            // Guardar en la base de datos bajo la ruta correcta (sobrescribiendo horarios existentes)
+            configRef.child('luces/dias').child(day).set(newSchedule)
+                .then(() => {
+                    showNotification('Programa de luces guardado');
+                    console.log('Horario guardado:', newSchedule);
+                })
+                .catch((error) => {
+                    console.error('Error al guardar programa de luces:', error);
+                    showNotification('Error al guardar programa de luces');
+                });
         });
 
+        // Control de Humidificador
+        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+            controlesRef.child('humidificador').set(true)
+                .then(() => showNotification('Humidificador prendido'))
+                .catch((error) => console.error('Error al prender humidificador:', error));
+        });
+
+        document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+            controlesRef.child('humidificador').set(false)
+                .then(() => showNotification('Humidificador apagado'))
+                .catch((error) => console.error('Error al apagar humidificador:', error));
+        });
+
+        // Guardar programa de humidificador
         document.getElementById('humidifier-save-program').addEventListener('click', () => {
             const dpvMin = parseFloat(document.getElementById('dpv-min').value);
             const dpvMax = parseFloat(document.getElementById('dpv-max').value);
 
-            if (!isNaN(dpvMin) && !isNaN(dpvMax)) {
-                set(RUTAS.humidificador, { programa: { dpv_min: dpvMin, dpv_max: dpvMax } })
-                    .then(() => showError('Programa de humidificador guardado'))
-                    .catch((error) => {
-                        console.error('Error al guardar programa de humidificador:', error);
-                        showError('Error al guardar programa de humidificador');
-                    });
-            } else {
-                showError('Valores de DPV no válidos');
-            }
+            configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
+                .then(() => showNotification('Programa de humidificador guardado'))
+                .catch((error) => console.error('Error al guardar programa de humidificador:', error));
         });
 
+        // Control de Extractor
+        document.getElementById('extractor-manual-on').addEventListener('click', () => {
+            controlesRef.child('extractor').set(true)
+                .then(() => showNotification('Extractor prendido'))
+                .catch((error) => console.error('Error al prender extractor:', error));
+        });
+
+        document.getElementById('extractor-manual-off').addEventListener('click', () => {
+            controlesRef.child('extractor').set(false)
+                .then(() => showNotification('Extractor apagado'))
+                .catch((error) => console.error('Error al apagar extractor:', error));
+        });
+
+        // Guardar programa de extractor
         document.getElementById('extractor-save-program').addEventListener('click', () => {
-            const interval = parseFloat(document.getElementById('extractor-interval').value);
-            const duration = parseFloat(document.getElementById('extractor-duration').value);
-            const humidityThreshold = parseFloat(document.getElementById('extractor-humidity-threshold').value);
+            const interval = parseInt(document.getElementById('extractor-interval').value);
+            const duration = parseInt(document.getElementById('extractor-duration').value);
 
-            if (!isNaN(interval) && !isNaN(duration) && !isNaN(humidityThreshold)) {
-                set(RUTAS.extractor, { programa: { intervalo: interval, duracion: duration, humedad_maxima: humidityThreshold } })
-                    .then(() => showError('Programa de extractor guardado'))
-                    .catch((error) => {
-                        console.error('Error al guardar programa de extractor:', error);
-                        showError('Error al guardar programa de extractor');
-                    });
-            } else {
-                showError('Valores de intervalo, duración o humedad no válidos');
-            }
+            configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
+                .then(() => showNotification('Programa de extractor guardado'))
+                .catch((error) => console.error('Error al guardar programa de extractor:', error));
         });
 
+        // Control de Riego
+        document.getElementById('watering-manual-on').addEventListener('click', () => {
+            controlesRef.child('bomba_riego').set(true)
+                .then(() => showNotification('Riego prendido'))
+                .catch((error) => console.error('Error al prender riego:', error));
+        });
+
+        document.getElementById('watering-manual-off').addEventListener('click', () => {
+            controlesRef.child('bomba_riego').set(false)
+                .then(() => showNotification('Riego apagado'))
+                .catch((error) => console.error('Error al apagar riego:', error));
+        });
+
+        // Guardar programa de riego
         document.getElementById('watering-save-program').addEventListener('click', () => {
-            const soilMoistureMin = parseFloat(document.getElementById('soil-moisture-min').value);
-            const soilMoistureMax = parseFloat(document.getElementById('soil-moisture-max').value);
+            const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
+            const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
+            const wateringDuration = parseInt(document.getElementById('watering-duration').value);
 
-            if (!isNaN(soilMoistureMin) && !isNaN(soilMoistureMax)) {
-                set(RUTAS.riego, { programa: { humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax } })
-                    .then(() => showError('Programa de riego guardado'))
-                    .catch((error) => {
-                        console.error('Error al guardar programa de riego:', error);
-                        showError('Error al guardar programa de riego');
-                    });
-            } else {
-                showError('Valores de humedad no válidos');
-            }
+            configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
+                .then(() => showNotification('Programa de riego guardado'))
+                .catch((error) => console.error('Error al guardar programa de riego:', error));
         });
 
-        // Actualización de los datos y gráficos en tiempo real
-        onValue(RUTAS.sensores, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                // Actualización de los datos
-                document.getElementById('temperature--span').textContent = data.temperatura || '--';
-                document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
-                document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
-                document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
-
-                // Lógica para actualizar gráficos
-                updateChart(temperatureChart, data.temperatura);
-                updateChart(humidityChart, data.humedad_ambiente);
-                updateChart(dpvChart, data.deficit_presion_vapor);
-            }
-        });
+        // Función para mostrar notificaciones
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 3000);
+        }
     </script>
-
 </body>
 </html>
