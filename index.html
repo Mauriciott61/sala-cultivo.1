@@ -221,11 +221,11 @@
         const db = firebase.database();
 
         // Referencias a la base de datos
-        const sensoresRef = db.ref('estado_actual/sensores');
-        const lightsRef = db.ref('control/luces');
+        const sensoresRef = db.ref('datos/sensores'); // Asumo que 'datos' es la raíz
+        const lucesRef = db.ref('control/luces');
         const humidifierRef = db.ref('control/humidificador');
         const extractorRef = db.ref('control/extractor');
-        const wateringRef = db.ref('control/riego');
+        const riegoRef = db.ref('control/riego');
 
         // Configuración de los gráficos
         const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
@@ -311,13 +311,13 @@
                 updateChart(dpvChart, time, data.deficit_presion_vapor);
 
                 // Control automático del extractor basado en la humedad
-                const humidityThreshold = parseFloat(document.getElementById('extractor-humidity-threshold').value);
-                if (!isNaN(humidityThreshold) {
+                 const humidityThreshold = parseFloat(document.getElementById('extractor-humidity-threshold').value);
+                if (!isNaN(humidityThreshold) && !isNaN(data.humedad_ambiente)) { //Añadido isNan para humedad ambiente
                     if (data.humedad_ambiente > humidityThreshold) {
-                        const interval = parseFloat(document.getElementById('extractor-interval').value) * 60000; // Convertir a milisegundos
-                        const duration = parseFloat(document.getElementById('extractor-duration').value) * 60000; // Convertir a milisegundos
+                        const interval = parseFloat(document.getElementById('extractor-interval').value) * 60000;
+                        const duration = parseFloat(document.getElementById('extractor-duration').value) * 60000;
 
-                        if (!isNaN(interval) {
+                        if (!isNaN(interval) && !isNaN(duration)) { //Añadido isNan para duration
                             extractorRef.set({ estado: 'encendido' })
                                 .then(() => {
                                     showNotification('Extractor encendido por humedad alta');
@@ -386,7 +386,7 @@
         });
 
         // Control de Humidificador
-        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+       document.getElementById('humidifier-manual-on').addEventListener('click', () => {
             humidifierRef.set({ estado: 'encendido' })
                 .then(() => showNotification('Humidificador encendido'))
                 .catch((error) => {
@@ -408,7 +408,7 @@
             const dpvMin = parseFloat(document.getElementById('dpv-min').value);
             const dpvMax = parseFloat(document.getElementById('dpv-max').value);
 
-            if (!isNaN(dpvMin) {
+            if (!isNaN(dpvMin) && !isNaN(dpvMax)) { // CORREGIDO: AND para ambos valores
                 humidifierRef.child('programa').set({ dpv_min: dpvMin, dpv_max: dpvMax })
                     .then(() => showNotification('Programa de humidificador guardado'))
                     .catch((error) => {
