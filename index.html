@@ -203,7 +203,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <!-- Código JavaScript -->
-    <script>
+    <script type="module">
     // Configuración de Firebase 9 (modular)
     import { initializeApp } from 'firebase/app';
     import { getDatabase, ref, set, onValue } from 'firebase/database';
@@ -346,6 +346,9 @@
             updateChart(dpvChart, data.deficit_presion_vapor);
         }
     });
+
+    // Exportar las constantes que deben ser globales o accesibles desde otros módulos
+    export { RUTAS, showError, controlDevice, updateChart };
 </script>
 
 
