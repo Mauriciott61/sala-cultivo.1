@@ -159,160 +159,232 @@
 
     <!-- Código JavaScript -->
     <script>
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-            authDomain: "sala-cultivo.firebaseapp.com",
-            databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-            projectId: "sala-cultivo",
-            storageBucket: "sala-cultivo.firebasestorage.app",
-            messagingSenderId: "388469961230",
-            appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-            measurementId: "G-72JQD67R0X"
+    // Configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+        authDomain: "sala-cultivo.firebaseapp.com",
+        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+        projectId: "sala-cultivo",
+        storageBucket: "sala-cultivo.firebasestorage.app",
+        messagingSenderId: "388469961230",
+        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+        measurementId: "G-72JQD67R0X"
+    };
+
+    // Inicializar Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Referencias a la base de datos
+    const configRef = db.ref('configuracion');
+    const estadoActualRef = db.ref('estado_actual');
+    const sensoresRef = db.ref('estado_actual/sensores');
+    const controlesRef = db.ref('estado_actual/controles');
+
+    // Variables globales
+    let modoProgramadoActivo = false;
+    let intervaloLuces;
+
+    // Actualizar datos en tiempo real
+    sensoresRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('temperature--span').textContent = data.temperatura || '--';
+            document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
+            document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
+            document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
+        }
+    });
+
+    controlesRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
+            document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
+            document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
+            document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
+        }
+    });
+
+    // Verificar el estado del modo programado al cargar la página
+    configRef.child('luces/modo_programado').on('value', (snapshot) => {
+        modoProgramadoActivo = snapshot.val() || false;
+        document.getElementById('lights-program-mode').textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+
+        // Si el modo programado está activo, iniciar el ciclo de luces
+        if (modoProgramadoActivo) {
+            iniciarCicloLuces();
+        } else {
+            detenerCicloLuces();
+        }
+    });
+
+    // Función para iniciar el ciclo de luces programado
+    function iniciarCicloLuces() {
+        configRef.child('luces/ciclo').once('value', (snapshot) => {
+            const cicloLuces = snapshot.val();
+            if (cicloLuces && cicloLuces.encendido && cicloLuces.apagado) {
+                const horasEncendido = cicloLuces.encendido * 3600 * 1000; // Convertir a milisegundos
+                const horasApagado = cicloLuces.apagado * 3600 * 1000; // Convertir a milisegundos
+
+                // Encender luces
+                controlesRef.child('luces').set(true)
+                    .then(() => showNotification('Luces prendidas (modo programado)'))
+                    .catch((error) => console.error('Error al prender luces:', error));
+
+                // Ciclo de encendido y apagado
+                intervaloLuces = setInterval(() => {
+                    controlesRef.child('luces').set(false)
+                        .then(() => showNotification('Luces apagadas (modo programado)'))
+                        .catch((error) => console.error('Error al apagar luces:', error));
+
+                    setTimeout(() => {
+                        controlesRef.child('luces').set(true)
+                            .then(() => showNotification('Luces prendidas (modo programado)'))
+                            .catch((error) => console.error('Error al prender luces:', error));
+                    }, horasApagado);
+                }, horasEncendido + horasApagado);
+            }
+        });
+    }
+
+    // Función para detener el ciclo de luces programado
+    function detenerCicloLuces() {
+        if (intervaloLuces) {
+            clearInterval(intervaloLuces);
+            intervaloLuces = null;
+        }
+    }
+
+    // Control de Luces
+    document.getElementById('lights-manual-on').addEventListener('click', () => {
+        controlesRef.child('luces').set(true)
+            .then(() => showNotification('Luces prendidas'))
+            .catch((error) => console.error('Error al prender luces:', error));
+    });
+
+    document.getElementById('lights-manual-off').addEventListener('click', () => {
+        controlesRef.child('luces').set(false)
+            .then(() => showNotification('Luces apagadas'))
+            .catch((error) => console.error('Error al apagar luces:', error));
+    });
+
+    // Guardar programa de luces
+    document.getElementById('lights-save-program').addEventListener('click', () => {
+        const onHours = parseInt(document.getElementById('light-on-hours').value);
+        const offHours = parseInt(document.getElementById('light-off-hours').value);
+
+        const cicloLuces = {
+            encendido: onHours,
+            apagado: offHours
         };
 
-        // Inicializar Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        configRef.child('luces/ciclo').set(cicloLuces)
+            .then(() => {
+                showNotification('Programa de luces guardado');
+                console.log('Ciclo de luces guardado:', cicloLuces);
+            })
+            .catch((error) => {
+                console.error('Error al guardar programa de luces:', error);
+                showNotification('Error al guardar programa de luces');
+            });
+    });
 
-        // Referencias a la base de datos
-        const configRef = db.ref('configuracion');
-        const estadoActualRef = db.ref('estado_actual');
-        const sensoresRef = db.ref('estado_actual/sensores');
-        const controlesRef = db.ref('estado_actual/controles');
+    // Activar/Desactivar Modo Programado de Luces
+    document.getElementById('lights-program-mode').addEventListener('click', () => {
+        modoProgramadoActivo = !modoProgramadoActivo;
 
-        // Actualizar datos en tiempo real
-        sensoresRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('temperature--span').textContent = data.temperatura || '--';
-                document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
-                document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
-                document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
-            }
-        });
+        configRef.child('luces/modo_programado').set(modoProgramadoActivo)
+            .then(() => {
+                showNotification(modoProgramadoActivo ? 'Modo programado activado' : 'Modo programado desactivado');
+                document.getElementById('lights-program-mode').textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
 
-        controlesRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
-                document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
-                document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
-                document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
-            }
-        });
+                if (modoProgramadoActivo) {
+                    iniciarCicloLuces();
+                } else {
+                    detenerCicloLuces();
+                }
+            })
+            .catch((error) => console.error('Error al cambiar el modo programado:', error));
+    });
 
-        // Control de Luces
-        document.getElementById('lights-manual-on').addEventListener('click', () => {
-            controlesRef.child('luces').set(true)
-                .then(() => showNotification('Luces prendidas'))
-                .catch((error) => console.error('Error al prender luces:', error));
-        });
+    // Control de Humidificador
+    document.getElementById('humidifier-manual-on').addEventListener('click', () => {
+        controlesRef.child('humidificador').set(true)
+            .then(() => showNotification('Humidificador prendido'))
+            .catch((error) => console.error('Error al prender humidificador:', error));
+    });
 
-        document.getElementById('lights-manual-off').addEventListener('click', () => {
-            controlesRef.child('luces').set(false)
-                .then(() => showNotification('Luces apagadas'))
-                .catch((error) => console.error('Error al apagar luces:', error));
-        });
+    document.getElementById('humidifier-manual-off').addEventListener('click', () => {
+        controlesRef.child('humidificador').set(false)
+            .then(() => showNotification('Humidificador apagado'))
+            .catch((error) => console.error('Error al apagar humidificador:', error));
+    });
 
-        // Guardar programa de luces
-        document.getElementById('lights-save-program').addEventListener('click', () => {
-            const onHours = parseInt(document.getElementById('light-on-hours').value);
-            const offHours = parseInt(document.getElementById('light-off-hours').value);
+    // Guardar programa de humidificador
+    document.getElementById('humidifier-save-program').addEventListener('click', () => {
+        const dpvMin = parseFloat(document.getElementById('dpv-min').value);
+        const dpvMax = parseFloat(document.getElementById('dpv-max').value);
 
-            const cicloLuces = {
-                encendido: onHours,
-                apagado: offHours
-            };
+        configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
+            .then(() => showNotification('Programa de humidificador guardado'))
+            .catch((error) => console.error('Error al guardar programa de humidificador:', error));
+    });
 
-            configRef.child('luces/ciclo').set(cicloLuces)
-                .then(() => {
-                    showNotification('Programa de luces guardado');
-                    console.log('Ciclo de luces guardado:', cicloLuces);
-                })
-                .catch((error) => {
-                    console.error('Error al guardar programa de luces:', error);
-                    showNotification('Error al guardar programa de luces');
-                });
-        });
+    // Control de Extractor
+    document.getElementById('extractor-manual-on').addEventListener('click', () => {
+        controlesRef.child('extractor').set(true)
+            .then(() => showNotification('Extractor prendido'))
+            .catch((error) => console.error('Error al prender extractor:', error));
+    });
 
-        // Control de Humidificador
-        document.getElementById('humidifier-manual-on').addEventListener('click', () => {
-            controlesRef.child('humidificador').set(true)
-                .then(() => showNotification('Humidificador prendido'))
-                .catch((error) => console.error('Error al prender humidificador:', error));
-        });
+    document.getElementById('extractor-manual-off').addEventListener('click', () => {
+        controlesRef.child('extractor').set(false)
+            .then(() => showNotification('Extractor apagado'))
+            .catch((error) => console.error('Error al apagar extractor:', error));
+    });
 
-        document.getElementById('humidifier-manual-off').addEventListener('click', () => {
-            controlesRef.child('humidificador').set(false)
-                .then(() => showNotification('Humidificador apagado'))
-                .catch((error) => console.error('Error al apagar humidificador:', error));
-        });
+    // Guardar programa de extractor
+    document.getElementById('extractor-save-program').addEventListener('click', () => {
+        const interval = parseInt(document.getElementById('extractor-interval').value);
+        const duration = parseInt(document.getElementById('extractor-duration').value);
 
-        // Guardar programa de humidificador
-        document.getElementById('humidifier-save-program').addEventListener('click', () => {
-            const dpvMin = parseFloat(document.getElementById('dpv-min').value);
-            const dpvMax = parseFloat(document.getElementById('dpv-max').value);
+        configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
+            .then(() => showNotification('Programa de extractor guardado'))
+            .catch((error) => console.error('Error al guardar programa de extractor:', error));
+    });
 
-            configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
-                .then(() => showNotification('Programa de humidificador guardado'))
-                .catch((error) => console.error('Error al guardar programa de humidificador:', error));
-        });
+    // Control de Riego
+    document.getElementById('watering-manual-on').addEventListener('click', () => {
+        controlesRef.child('bomba_riego').set(true)
+            .then(() => showNotification('Riego prendido'))
+            .catch((error) => console.error('Error al prender riego:', error));
+    });
 
-        // Control de Extractor
-        document.getElementById('extractor-manual-on').addEventListener('click', () => {
-            controlesRef.child('extractor').set(true)
-                .then(() => showNotification('Extractor prendido'))
-                .catch((error) => console.error('Error al prender extractor:', error));
-        });
+    document.getElementById('watering-manual-off').addEventListener('click', () => {
+        controlesRef.child('bomba_riego').set(false)
+            .then(() => showNotification('Riego apagado'))
+            .catch((error) => console.error('Error al apagar riego:', error));
+    });
 
-        document.getElementById('extractor-manual-off').addEventListener('click', () => {
-            controlesRef.child('extractor').set(false)
-                .then(() => showNotification('Extractor apagado'))
-                .catch((error) => console.error('Error al apagar extractor:', error));
-        });
+    // Guardar programa de riego
+    document.getElementById('watering-save-program').addEventListener('click', () => {
+        const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
+        const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
+        const wateringDuration = parseInt(document.getElementById('watering-duration').value);
 
-        // Guardar programa de extractor
-        document.getElementById('extractor-save-program').addEventListener('click', () => {
-            const interval = parseInt(document.getElementById('extractor-interval').value);
-            const duration = parseInt(document.getElementById('extractor-duration').value);
+        configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
+            .then(() => showNotification('Programa de riego guardado'))
+            .catch((error) => console.error('Error al guardar programa de riego:', error));
+    });
 
-            configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
-                .then(() => showNotification('Programa de extractor guardado'))
-                .catch((error) => console.error('Error al guardar programa de extractor:', error));
-        });
-
-        // Control de Riego
-        document.getElementById('watering-manual-on').addEventListener('click', () => {
-            controlesRef.child('bomba_riego').set(true)
-                .then(() => showNotification('Riego prendido'))
-                .catch((error) => console.error('Error al prender riego:', error));
-        });
-
-        document.getElementById('watering-manual-off').addEventListener('click', () => {
-            controlesRef.child('bomba_riego').set(false)
-                .then(() => showNotification('Riego apagado'))
-                .catch((error) => console.error('Error al apagar riego:', error));
-        });
-
-        // Guardar programa de riego
-        document.getElementById('watering-save-program').addEventListener('click', () => {
-            const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
-            const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
-            const wateringDuration = parseInt(document.getElementById('watering-duration').value);
-
-            configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
-                .then(() => showNotification('Programa de riego guardado'))
-                .catch((error) => console.error('Error al guardar programa de riego:', error));
-        });
-
-        // Función para mostrar notificaciones
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.display = 'block';
-            setTimeout(() => notification.style.display = 'none', 3000);
-        }
-    </script>
+    // Función para mostrar notificaciones
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.style.display = 'block';
+        setTimeout(() => notification.style.display = 'none', 3000);
+    }
+</script>
 </body>
 </html>
