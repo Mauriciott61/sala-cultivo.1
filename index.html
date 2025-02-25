@@ -123,6 +123,7 @@
                 <label for="extractor-duration">Duración de encendido (minutos):</label>
                 <input type="number" id="extractor-duration" min="1">
                 <button id="extractor-save-program">Guardar Programa</button>
+                <button id="extractor-program-mode">Activar Modo Programado</button>
             </div>
         </section>
 
@@ -184,6 +185,8 @@
     // Variables globales
     let modoProgramadoActivo = false;
     let intervaloLuces;
+    let modoProgramadoExtractorActivo = false;
+    let intervaloExtractor;
 
     // Actualizar datos en tiempo real
     sensoresRef.on('value', (snapshot) => {
@@ -206,7 +209,7 @@
         }
     });
 
-    // Verificar el estado del modo programado al cargar la página
+    // Verificar el estado del modo programado de las luces al cargar la página
     configRef.child('luces/modo_programado').on('value', (snapshot) => {
         modoProgramadoActivo = snapshot.val() || false;
         document.getElementById('lights-program-mode').textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
@@ -253,6 +256,51 @@
         if (intervaloLuces) {
             clearInterval(intervaloLuces);
             intervaloLuces = null;
+        }
+    }
+
+    // Verificar el estado del modo programado del extractor al cargar la página
+    configRef.child('extractor/modo_programado').on('value', (snapshot) => {
+        modoProgramadoExtractorActivo = snapshot.val() || false;
+        document.getElementById('extractor-program-mode').textContent = modoProgramadoExtractorActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+
+        // Si el modo programado está activo, iniciar el ciclo del extractor
+        if (modoProgramadoExtractorActivo) {
+            iniciarCicloExtractor();
+        } else {
+            detenerCicloExtractor();
+        }
+    });
+
+    // Función para iniciar el ciclo programado del extractor
+    function iniciarCicloExtractor() {
+        configRef.child('extractor/ciclo').once('value', (snapshot) => {
+            const cicloExtractor = snapshot.val();
+            if (cicloExtractor && cicloExtractor.encendido_normal && cicloExtractor.apagado_normal) {
+                const intervalo = cicloExtractor.apagado_normal * 60 * 1000; // Convertir a milisegundos
+                const duracion = cicloExtractor.encendido_normal * 60 * 1000; // Convertir a milisegundos
+
+                // Ciclo de encendido y apagado
+                intervaloExtractor = setInterval(() => {
+                    controlesRef.child('extractor').set(true)
+                        .then(() => showNotification('Extractor prendido (modo programado)'))
+                        .catch((error) => console.error('Error al prender extractor:', error));
+
+                    setTimeout(() => {
+                        controlesRef.child('extractor').set(false)
+                            .then(() => showNotification('Extractor apagado (modo programado)'))
+                            .catch((error) => console.error('Error al apagar extractor:', error));
+                    }, duracion);
+                }, intervalo + duracion);
+            }
+        });
+    }
+
+    // Función para detener el ciclo programado del extractor
+    function detenerCicloExtractor() {
+        if (intervaloExtractor) {
+            clearInterval(intervaloExtractor);
+            intervaloExtractor = null;
         }
     }
 
@@ -352,6 +400,24 @@
         configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
             .then(() => showNotification('Programa de extractor guardado'))
             .catch((error) => console.error('Error al guardar programa de extractor:', error));
+    });
+
+    // Activar/Desactivar Modo Programado del Extractor
+    document.getElementById('extractor-program-mode').addEventListener('click', () => {
+        modoProgramadoExtractorActivo = !modoProgramadoExtractorActivo;
+
+        configRef.child('extractor/modo_programado').set(modoProgramadoExtractorActivo)
+            .then(() => {
+                showNotification(modoProgramadoExtractorActivo ? 'Modo programado del extractor activado' : 'Modo programado del extractor desactivado');
+                document.getElementById('extractor-program-mode').textContent = modoProgramadoExtractorActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+
+                if (modoProgramadoExtractorActivo) {
+                    iniciarCicloExtractor();
+                } else {
+                    detenerCicloExtractor();
+                }
+            })
+            .catch((error) => console.error('Error al cambiar el modo programado del extractor:', error));
     });
 
     // Control de Riego
