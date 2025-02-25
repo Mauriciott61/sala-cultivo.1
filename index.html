@@ -565,6 +565,11 @@
                 const onHours = parseInt(document.getElementById('light-on-hours').value);
                 const offHours = parseInt(document.getElementById('light-off-hours').value);
 
+                if (isNaN(onHours) || isNaN(offHours)) {
+                    showNotification('Error: Los valores deben ser números válidos.');
+                    return;
+                }
+
                 const cicloLuces = {
                     encendido: onHours,
                     apagado: offHours
@@ -630,6 +635,11 @@
                 const dpvMin = parseFloat(document.getElementById('dpv-min').value);
                 const dpvMax = parseFloat(document.getElementById('dpv-max').value);
 
+                if (isNaN(dpvMin) || isNaN(dpvMax)) {
+                    showNotification('Error: Los valores deben ser números válidos.');
+                    return;
+                }
+
                 configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
                     .then(() => showNotification('Programa de humidificador guardado'))
                     .catch((error) => console.error('Error al guardar programa de humidificador:', error));
@@ -661,6 +671,11 @@
             extractorSaveProgramButton.addEventListener('click', () => {
                 const interval = parseInt(document.getElementById('extractor-interval').value);
                 const duration = parseInt(document.getElementById('extractor-duration').value);
+
+                if (isNaN(interval) || isNaN(duration)) {
+                    showNotification('Error: Los valores deben ser números válidos.');
+                    return;
+                }
 
                 configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
                     .then(() => {
@@ -718,6 +733,11 @@
                 const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
                 const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
                 const wateringDuration = parseInt(document.getElementById('watering-duration').value);
+
+                if (isNaN(soilMoistureMin) || isNaN(soilMoistureMax) || isNaN(wateringDuration)) {
+                    showNotification('Error: Los valores deben ser números válidos.');
+                    return;
+                }
 
                 configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
                     .then(() => showNotification('Programa de riego guardado'))
