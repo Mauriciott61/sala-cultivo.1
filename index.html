@@ -31,6 +31,18 @@
             padding: 20px;
             margin-bottom: 20px;
         }
+        .cycle-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.cycle-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
         .program-section {
             margin-top: 20px;
         }
@@ -169,7 +181,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <!-- Código JavaScript -->
-    <script>
+   <script>
     // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
@@ -197,6 +209,61 @@
     let intervaloLuces;
     let modoProgramadoExtractorActivo = false;
     let intervaloExtractor;
+
+    // Variables para la cuenta regresiva
+    let lightsCountdownInterval;
+    let extractorCountdownInterval;
+
+    // Función para formatear el tiempo en minutos y segundos
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Función para iniciar la cuenta regresiva de las luces
+    function startLightsCountdown(duration, callback) {
+        let timeRemaining = duration;
+        document.getElementById('lights-countdown').textContent = formatTime(timeRemaining);
+
+        lightsCountdownInterval = setInterval(() => {
+            timeRemaining--;
+            document.getElementById('lights-countdown').textContent = formatTime(timeRemaining);
+
+            if (timeRemaining <= 0) {
+                clearInterval(lightsCountdownInterval);
+                if (callback) callback();
+            }
+        }, 1000);
+    }
+
+    // Función para iniciar la cuenta regresiva del extractor
+    function startExtractorCountdown(duration, callback) {
+        let timeRemaining = duration;
+        document.getElementById('extractor-countdown').textContent = formatTime(timeRemaining);
+
+        extractorCountdownInterval = setInterval(() => {
+            timeRemaining--;
+            document.getElementById('extractor-countdown').textContent = formatTime(timeRemaining);
+
+            if (timeRemaining <= 0) {
+                clearInterval(extractorCountdownInterval);
+                if (callback) callback();
+            }
+        }, 1000);
+    }
+
+    // Actualizar tiempos programados de las luces
+    function updateLightsCycleTimes(onHours, offHours) {
+        document.getElementById('lights-on-time').textContent = `${onHours} horas`;
+        document.getElementById('lights-off-time').textContent = `${offHours} horas`;
+    }
+
+    // Actualizar tiempos programados del extractor
+    function updateExtractorCycleTimes(onMinutes, offMinutes) {
+        document.getElementById('extractor-on-time').textContent = `${onMinutes} minutos`;
+        document.getElementById('extractor-off-time').textContent = `${offMinutes} minutos`;
+    }
 
     // Actualizar datos en tiempo real
     sensoresRef.on('value', (snapshot) => {
@@ -237,26 +304,25 @@
         configRef.child('luces/ciclo').once('value', (snapshot) => {
             const cicloLuces = snapshot.val();
             if (cicloLuces && cicloLuces.encendido && cicloLuces.apagado) {
-                const horasEncendido = cicloLuces.encendido * 3600 * 1000; // Convertir a milisegundos
-                const horasApagado = cicloLuces.apagado * 3600 * 1000; // Convertir a milisegundos
+                const horasEncendido = cicloLuces.encendido * 3600; // Convertir a segundos
+                const horasApagado = cicloLuces.apagado * 3600; // Convertir a segundos
 
-                // Encender luces
+                // Actualizar tiempos programados
+                updateLightsCycleTimes(cicloLuces.encendido, cicloLuces.apagado);
+
+                // Encender luces y empezar cuenta regresiva
                 controlesRef.child('luces').set(true)
-                    .then(() => showNotification('Luces prendidas (modo programado)'))
-                    .catch((error) => console.error('Error al prender luces:', error));
-
-                // Ciclo de encendido y apagado
-                intervaloLuces = setInterval(() => {
-                    controlesRef.child('luces').set(false)
-                        .then(() => showNotification('Luces apagadas (modo programado)'))
-                        .catch((error) => console.error('Error al apagar luces:', error));
-
-                    setTimeout(() => {
-                        controlesRef.child('luces').set(true)
-                            .then(() => showNotification('Luces prendidas (modo programado)'))
-                            .catch((error) => console.error('Error al prender luces:', error));
-                    }, horasApagado);
-                }, horasEncendido + horasApagado);
+                    .then(() => {
+                        showNotification('Luces prendidas (modo programado)');
+                        startLightsCountdown(horasEncendido, () => {
+                            // Apagar luces y empezar cuenta regresiva de apagado
+                            controlesRef.child('luces').set(false)
+                                .then(() => {
+                                    showNotification('Luces apagadas (modo programado)');
+                                    startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
+                                });
+                        });
+                    });
             }
         });
     }
@@ -266,6 +332,10 @@
         if (intervaloLuces) {
             clearInterval(intervaloLuces);
             intervaloLuces = null;
+        }
+        if (lightsCountdownInterval) {
+            clearInterval(lightsCountdownInterval);
+            document.getElementById('lights-countdown').textContent = '--';
         }
     }
 
@@ -287,21 +357,25 @@
         configRef.child('extractor/ciclo').once('value', (snapshot) => {
             const cicloExtractor = snapshot.val();
             if (cicloExtractor && cicloExtractor.encendido_normal && cicloExtractor.apagado_normal) {
-                const intervalo = cicloExtractor.apagado_normal * 60 * 1000; // Convertir a milisegundos
-                const duracion = cicloExtractor.encendido_normal * 60 * 1000; // Convertir a milisegundos
+                const minutosEncendido = cicloExtractor.encendido_normal * 60; // Convertir a segundos
+                const minutosApagado = cicloExtractor.apagado_normal * 60; // Convertir a segundos
 
-                // Ciclo de encendido y apagado
-                intervaloExtractor = setInterval(() => {
-                    controlesRef.child('extractor').set(true)
-                        .then(() => showNotification('Extractor prendido (modo programado)'))
-                        .catch((error) => console.error('Error al prender extractor:', error));
+                // Actualizar tiempos programados
+                updateExtractorCycleTimes(cicloExtractor.encendido_normal, cicloExtractor.apagado_normal);
 
-                    setTimeout(() => {
-                        controlesRef.child('extractor').set(false)
-                            .then(() => showNotification('Extractor apagado (modo programado)'))
-                            .catch((error) => console.error('Error al apagar extractor:', error));
-                    }, duracion);
-                }, intervalo + duracion);
+                // Encender extractor y empezar cuenta regresiva
+                controlesRef.child('extractor').set(true)
+                    .then(() => {
+                        showNotification('Extractor prendido (modo programado)');
+                        startExtractorCountdown(minutosEncendido, () => {
+                            // Apagar extractor y empezar cuenta regresiva de apagado
+                            controlesRef.child('extractor').set(false)
+                                .then(() => {
+                                    showNotification('Extractor apagado (modo programado)');
+                                    startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
+                                });
+                        });
+                    });
             }
         });
     }
@@ -311,6 +385,10 @@
         if (intervaloExtractor) {
             clearInterval(intervaloExtractor);
             intervaloExtractor = null;
+        }
+        if (extractorCountdownInterval) {
+            clearInterval(extractorCountdownInterval);
+            document.getElementById('extractor-countdown').textContent = '--';
         }
     }
 
@@ -341,6 +419,7 @@
             .then(() => {
                 showNotification('Programa de luces guardado');
                 console.log('Ciclo de luces guardado:', cicloLuces);
+                updateLightsCycleTimes(onHours, offHours); // Actualizar tiempos programados
             })
             .catch((error) => {
                 console.error('Error al guardar programa de luces:', error);
@@ -408,7 +487,10 @@
         const duration = parseInt(document.getElementById('extractor-duration').value);
 
         configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
-            .then(() => showNotification('Programa de extractor guardado'))
+            .then(() => {
+                showNotification('Programa de extractor guardado');
+                updateExtractorCycleTimes(duration, interval); // Actualizar tiempos programados
+            })
             .catch((error) => console.error('Error al guardar programa de extractor:', error));
     });
 
