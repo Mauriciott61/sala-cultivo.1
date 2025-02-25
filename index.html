@@ -181,7 +181,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <!-- Código JavaScript -->
-   <script>
+  <script>
     // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
@@ -265,6 +265,92 @@
         document.getElementById('extractor-off-time').textContent = `${offMinutes} minutos`;
     }
 
+    // Actualizar la etapa actual del ciclo de luces
+    function updateLightsCycleStage(isOn) {
+        const stageElement = document.getElementById('lights-stage');
+        stageElement.textContent = isOn ? 'Encendido' : 'Apagado';
+    }
+
+    // Actualizar la etapa actual del ciclo del extractor
+    function updateExtractorCycleStage(isOn) {
+        const stageElement = document.getElementById('extractor-stage');
+        stageElement.textContent = isOn ? 'Encendido' : 'Apagado';
+    }
+
+    // Guardar el estado del ciclo de luces en Firebase
+    function saveLightsCycleState(isOn, timeRemaining) {
+        configRef.child('luces/estado').set({
+            encendido: isOn,
+            tiempo_restante: timeRemaining
+        });
+    }
+
+    // Guardar el estado del ciclo del extractor en Firebase
+    function saveExtractorCycleState(isOn, timeRemaining) {
+        configRef.child('extractor/estado').set({
+            encendido: isOn,
+            tiempo_restante: timeRemaining
+        });
+    }
+
+    // Recuperar el estado del ciclo de luces al cargar la página
+    configRef.child('luces/estado').on('value', (snapshot) => {
+        const estadoLuces = snapshot.val();
+        if (estadoLuces && modoProgramadoActivo) {
+            const tiempoRestante = estadoLuces.tiempo_restante || 0;
+            const isOn = estadoLuces.encendido || false;
+
+            updateLightsCycleStage(isOn); // Actualizar la etapa actual
+
+            if (isOn) {
+                // Si las luces están encendidas, iniciar cuenta regresiva de encendido
+                startLightsCountdown(tiempoRestante, () => {
+                    // Apagar luces y empezar cuenta regresiva de apagado
+                    controlesRef.child('luces').set(false)
+                        .then(() => {
+                            showNotification('Luces apagadas (modo programado)');
+                            updateLightsCycleStage(false); // Actualizar la etapa actual
+                            const horasApagado = cicloLuces.apagado * 3600; // Convertir a segundos
+                            saveLightsCycleState(false, horasApagado); // Guardar estado en Firebase
+                            startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
+                        });
+                });
+            } else {
+                // Si las luces están apagadas, iniciar cuenta regresiva de apagado
+                startLightsCountdown(tiempoRestante, iniciarCicloLuces);
+            }
+        }
+    });
+
+    // Recuperar el estado del ciclo del extractor al cargar la página
+    configRef.child('extractor/estado').on('value', (snapshot) => {
+        const estadoExtractor = snapshot.val();
+        if (estadoExtractor && modoProgramadoExtractorActivo) {
+            const tiempoRestante = estadoExtractor.tiempo_restante || 0;
+            const isOn = estadoExtractor.encendido || false;
+
+            updateExtractorCycleStage(isOn); // Actualizar la etapa actual
+
+            if (isOn) {
+                // Si el extractor está encendido, iniciar cuenta regresiva de encendido
+                startExtractorCountdown(tiempoRestante, () => {
+                    // Apagar extractor y empezar cuenta regresiva de apagado
+                    controlesRef.child('extractor').set(false)
+                        .then(() => {
+                            showNotification('Extractor apagado (modo programado)');
+                            updateExtractorCycleStage(false); // Actualizar la etapa actual
+                            const minutosApagado = cicloExtractor.apagado_normal * 60; // Convertir a segundos
+                            saveExtractorCycleState(false, minutosApagado); // Guardar estado en Firebase
+                            startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
+                        });
+                });
+            } else {
+                // Si el extractor está apagado, iniciar cuenta regresiva de apagado
+                startExtractorCountdown(tiempoRestante, iniciarCicloExtractor);
+            }
+        }
+    });
+
     // Actualizar datos en tiempo real
     sensoresRef.on('value', (snapshot) => {
         const data = snapshot.val();
@@ -314,11 +400,15 @@
                 controlesRef.child('luces').set(true)
                     .then(() => {
                         showNotification('Luces prendidas (modo programado)');
+                        updateLightsCycleStage(true); // Actualizar la etapa actual
+                        saveLightsCycleState(true, horasEncendido); // Guardar estado en Firebase
                         startLightsCountdown(horasEncendido, () => {
                             // Apagar luces y empezar cuenta regresiva de apagado
                             controlesRef.child('luces').set(false)
                                 .then(() => {
                                     showNotification('Luces apagadas (modo programado)');
+                                    updateLightsCycleStage(false); // Actualizar la etapa actual
+                                    saveLightsCycleState(false, horasApagado); // Guardar estado en Firebase
                                     startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
                                 });
                         });
@@ -367,11 +457,15 @@
                 controlesRef.child('extractor').set(true)
                     .then(() => {
                         showNotification('Extractor prendido (modo programado)');
+                        updateExtractorCycleStage(true); // Actualizar la etapa actual
+                        saveExtractorCycleState(true, minutosEncendido); // Guardar estado en Firebase
                         startExtractorCountdown(minutosEncendido, () => {
                             // Apagar extractor y empezar cuenta regresiva de apagado
                             controlesRef.child('extractor').set(false)
                                 .then(() => {
                                     showNotification('Extractor apagado (modo programado)');
+                                    updateExtractorCycleStage(false); // Actualizar la etapa actual
+                                    saveExtractorCycleState(false, minutosApagado); // Guardar estado en Firebase
                                     startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
                                 });
                         });
