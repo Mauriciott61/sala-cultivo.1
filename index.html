@@ -5,7 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automatización de Sala de Cultivo</title>
     <style>
-        /* Estilos anteriores... */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+        }
+        .center-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .quadrant {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .program-section {
+            margin-top: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .notification {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -32,20 +83,10 @@
 
             <div class="program-section">
                 <h3>Programación de Luces</h3>
-                <label for="light-day">Día:</label>
-                <select id="light-day">
-                    <option value="lunes">Lunes</option>
-                    <option value="martes">Martes</option>
-                    <option value="miércoles">Miércoles</option>
-                    <option value="jueves">Jueves</option>
-                    <option value="viernes">Viernes</option>
-                    <option value="sábado">Sábado</option>
-                    <option value="domingo">Domingo</option>
-                </select>
-                <label for="light-on-time">Hora de encendido:</label>
-                <input type="time" id="light-on-time">
-                <label for="light-off-time">Hora de apagado:</label>
-                <input type="time" id="light-off-time">
+                <label for="light-on-hours">Horas Encendido:</label>
+                <input type="number" id="light-on-hours" min="0" max="24">
+                <label for="light-off-hours">Horas Apagado:</label>
+                <input type="number" id="light-off-hours" min="0" max="24">
                 <button id="lights-save-program">Guardar Programa</button>
             </div>
         </section>
@@ -173,23 +214,20 @@
                 .catch((error) => console.error('Error al apagar luces:', error));
         });
 
-        // Guardar programa de luces (sobrescribiendo horarios existentes)
+        // Guardar programa de luces
         document.getElementById('lights-save-program').addEventListener('click', () => {
-            const day = document.getElementById('light-day').value;
-            const onTime = document.getElementById('light-on-time').value;
-            const offTime = document.getElementById('light-off-time').value;
+            const onHours = parseInt(document.getElementById('light-on-hours').value);
+            const offHours = parseInt(document.getElementById('light-off-hours').value);
 
-            // Crear un nuevo objeto con los horarios
-            const newSchedule = {
-                inicio: onTime,
-                fin: offTime
+            const cicloLuces = {
+                encendido: onHours,
+                apagado: offHours
             };
 
-            // Guardar en la base de datos bajo la ruta correcta (sobrescribiendo horarios existentes)
-            configRef.child('luces/dias').child(day).set(newSchedule)
+            configRef.child('luces/ciclo').set(cicloLuces)
                 .then(() => {
                     showNotification('Programa de luces guardado');
-                    console.log('Horario guardado:', newSchedule);
+                    console.log('Ciclo de luces guardado:', cicloLuces);
                 })
                 .catch((error) => {
                     console.error('Error al guardar programa de luces:', error);
