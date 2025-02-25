@@ -182,461 +182,562 @@
 
     <!-- Código JavaScript -->
   <script>
-    // Configuración de Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
-        authDomain: "sala-cultivo.firebaseapp.com",
-        databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
-        projectId: "sala-cultivo",
-        storageBucket: "sala-cultivo.firebasestorage.app",
-        messagingSenderId: "388469961230",
-        appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
-        measurementId: "G-72JQD67R0X"
-    };
-
-    // Inicializar Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // Referencias a la base de datos
-    const configRef = db.ref('configuracion');
-    const estadoActualRef = db.ref('estado_actual');
-    const sensoresRef = db.ref('estado_actual/sensores');
-    const controlesRef = db.ref('estado_actual/controles');
-
-    // Variables globales
-    let modoProgramadoActivo = false;
-    let intervaloLuces;
-    let modoProgramadoExtractorActivo = false;
-    let intervaloExtractor;
-
-    // Variables para la cuenta regresiva
-    let lightsCountdownInterval;
-    let extractorCountdownInterval;
-
-    // Función para formatear el tiempo en minutos y segundos
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    // Función para iniciar la cuenta regresiva de las luces
-    function startLightsCountdown(duration, callback) {
-        let timeRemaining = duration;
-        document.getElementById('lights-countdown').textContent = formatTime(timeRemaining);
-
-        lightsCountdownInterval = setInterval(() => {
-            timeRemaining--;
-            document.getElementById('lights-countdown').textContent = formatTime(timeRemaining);
-
-            if (timeRemaining <= 0) {
-                clearInterval(lightsCountdownInterval);
-                if (callback) callback();
-            }
-        }, 1000);
-    }
-
-    // Función para iniciar la cuenta regresiva del extractor
-    function startExtractorCountdown(duration, callback) {
-        let timeRemaining = duration;
-        document.getElementById('extractor-countdown').textContent = formatTime(timeRemaining);
-
-        extractorCountdownInterval = setInterval(() => {
-            timeRemaining--;
-            document.getElementById('extractor-countdown').textContent = formatTime(timeRemaining);
-
-            if (timeRemaining <= 0) {
-                clearInterval(extractorCountdownInterval);
-                if (callback) callback();
-            }
-        }, 1000);
-    }
-
-    // Actualizar tiempos programados de las luces
-    function updateLightsCycleTimes(onHours, offHours) {
-        document.getElementById('lights-on-time').textContent = `${onHours} horas`;
-        document.getElementById('lights-off-time').textContent = `${offHours} horas`;
-    }
-
-    // Actualizar tiempos programados del extractor
-    function updateExtractorCycleTimes(onMinutes, offMinutes) {
-        document.getElementById('extractor-on-time').textContent = `${onMinutes} minutos`;
-        document.getElementById('extractor-off-time').textContent = `${offMinutes} minutos`;
-    }
-
-    // Actualizar la etapa actual del ciclo de luces
-    function updateLightsCycleStage(isOn) {
-        const stageElement = document.getElementById('lights-stage');
-        stageElement.textContent = isOn ? 'Encendido' : 'Apagado';
-    }
-
-    // Actualizar la etapa actual del ciclo del extractor
-    function updateExtractorCycleStage(isOn) {
-        const stageElement = document.getElementById('extractor-stage');
-        stageElement.textContent = isOn ? 'Encendido' : 'Apagado';
-    }
-
-    // Guardar el estado del ciclo de luces en Firebase
-    function saveLightsCycleState(isOn, timeRemaining) {
-        configRef.child('luces/estado').set({
-            encendido: isOn,
-            tiempo_restante: timeRemaining
-        });
-    }
-
-    // Guardar el estado del ciclo del extractor en Firebase
-    function saveExtractorCycleState(isOn, timeRemaining) {
-        configRef.child('extractor/estado').set({
-            encendido: isOn,
-            tiempo_restante: timeRemaining
-        });
-    }
-
-    // Recuperar el estado del ciclo de luces al cargar la página
-    configRef.child('luces/estado').on('value', (snapshot) => {
-        const estadoLuces = snapshot.val();
-        if (estadoLuces && modoProgramadoActivo) {
-            const tiempoRestante = estadoLuces.tiempo_restante || 0;
-            const isOn = estadoLuces.encendido || false;
-
-            updateLightsCycleStage(isOn); // Actualizar la etapa actual
-
-            if (isOn) {
-                // Si las luces están encendidas, iniciar cuenta regresiva de encendido
-                startLightsCountdown(tiempoRestante, () => {
-                    // Apagar luces y empezar cuenta regresiva de apagado
-                    controlesRef.child('luces').set(false)
-                        .then(() => {
-                            showNotification('Luces apagadas (modo programado)');
-                            updateLightsCycleStage(false); // Actualizar la etapa actual
-                            const horasApagado = cicloLuces.apagado * 3600; // Convertir a segundos
-                            saveLightsCycleState(false, horasApagado); // Guardar estado en Firebase
-                            startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
-                        });
-                });
-            } else {
-                // Si las luces están apagadas, iniciar cuenta regresiva de apagado
-                startLightsCountdown(tiempoRestante, iniciarCicloLuces);
-            }
-        }
-    });
-
-    // Recuperar el estado del ciclo del extractor al cargar la página
-    configRef.child('extractor/estado').on('value', (snapshot) => {
-        const estadoExtractor = snapshot.val();
-        if (estadoExtractor && modoProgramadoExtractorActivo) {
-            const tiempoRestante = estadoExtractor.tiempo_restante || 0;
-            const isOn = estadoExtractor.encendido || false;
-
-            updateExtractorCycleStage(isOn); // Actualizar la etapa actual
-
-            if (isOn) {
-                // Si el extractor está encendido, iniciar cuenta regresiva de encendido
-                startExtractorCountdown(tiempoRestante, () => {
-                    // Apagar extractor y empezar cuenta regresiva de apagado
-                    controlesRef.child('extractor').set(false)
-                        .then(() => {
-                            showNotification('Extractor apagado (modo programado)');
-                            updateExtractorCycleStage(false); // Actualizar la etapa actual
-                            const minutosApagado = cicloExtractor.apagado_normal * 60; // Convertir a segundos
-                            saveExtractorCycleState(false, minutosApagado); // Guardar estado en Firebase
-                            startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
-                        });
-                });
-            } else {
-                // Si el extractor está apagado, iniciar cuenta regresiva de apagado
-                startExtractorCountdown(tiempoRestante, iniciarCicloExtractor);
-            }
-        }
-    });
-
-    // Actualizar datos en tiempo real
-    sensoresRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            document.getElementById('temperature--span').textContent = data.temperatura || '--';
-            document.getElementById('humidity--span').textContent = data.humedad_ambiente || '--';
-            document.getElementById('dpv--span').textContent = data.deficit_presion_vapor || '--';
-            document.getElementById('soil-moisture--span').textContent = data.humedad_suelo || '--';
-        }
-    });
-
-    controlesRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            document.getElementById('lights-status').textContent = data.luces ? 'Prendidas' : 'Apagadas';
-            document.getElementById('humidifier-status').textContent = data.humidificador ? 'Prendido' : 'Apagado';
-            document.getElementById('extractor-status').textContent = data.extractor ? 'Prendido' : 'Apagado';
-            document.getElementById('watering-status').textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
-        }
-    });
-
-    // Verificar el estado del modo programado de las luces al cargar la página
-    configRef.child('luces/modo_programado').on('value', (snapshot) => {
-        modoProgramadoActivo = snapshot.val() || false;
-        document.getElementById('lights-program-mode').textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
-
-        // Si el modo programado está activo, iniciar el ciclo de luces
-        if (modoProgramadoActivo) {
-            iniciarCicloLuces();
-        } else {
-            detenerCicloLuces();
-        }
-    });
-
-    // Función para iniciar el ciclo de luces programado
-    function iniciarCicloLuces() {
-        configRef.child('luces/ciclo').once('value', (snapshot) => {
-            const cicloLuces = snapshot.val();
-            if (cicloLuces && cicloLuces.encendido && cicloLuces.apagado) {
-                const horasEncendido = cicloLuces.encendido * 3600; // Convertir a segundos
-                const horasApagado = cicloLuces.apagado * 3600; // Convertir a segundos
-
-                // Actualizar tiempos programados
-                updateLightsCycleTimes(cicloLuces.encendido, cicloLuces.apagado);
-
-                // Encender luces y empezar cuenta regresiva
-                controlesRef.child('luces').set(true)
-                    .then(() => {
-                        showNotification('Luces prendidas (modo programado)');
-                        updateLightsCycleStage(true); // Actualizar la etapa actual
-                        saveLightsCycleState(true, horasEncendido); // Guardar estado en Firebase
-                        startLightsCountdown(horasEncendido, () => {
-                            // Apagar luces y empezar cuenta regresiva de apagado
-                            controlesRef.child('luces').set(false)
-                                .then(() => {
-                                    showNotification('Luces apagadas (modo programado)');
-                                    updateLightsCycleStage(false); // Actualizar la etapa actual
-                                    saveLightsCycleState(false, horasApagado); // Guardar estado en Firebase
-                                    startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
-                                });
-                        });
-                    });
-            }
-        });
-    }
-
-    // Función para detener el ciclo de luces programado
-    function detenerCicloLuces() {
-        if (intervaloLuces) {
-            clearInterval(intervaloLuces);
-            intervaloLuces = null;
-        }
-        if (lightsCountdownInterval) {
-            clearInterval(lightsCountdownInterval);
-            document.getElementById('lights-countdown').textContent = '--';
-        }
-    }
-
-    // Verificar el estado del modo programado del extractor al cargar la página
-    configRef.child('extractor/modo_programado').on('value', (snapshot) => {
-        modoProgramadoExtractorActivo = snapshot.val() || false;
-        document.getElementById('extractor-program-mode').textContent = modoProgramadoExtractorActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
-
-        // Si el modo programado está activo, iniciar el ciclo del extractor
-        if (modoProgramadoExtractorActivo) {
-            iniciarCicloExtractor();
-        } else {
-            detenerCicloExtractor();
-        }
-    });
-
-    // Función para iniciar el ciclo programado del extractor
-    function iniciarCicloExtractor() {
-        configRef.child('extractor/ciclo').once('value', (snapshot) => {
-            const cicloExtractor = snapshot.val();
-            if (cicloExtractor && cicloExtractor.encendido_normal && cicloExtractor.apagado_normal) {
-                const minutosEncendido = cicloExtractor.encendido_normal * 60; // Convertir a segundos
-                const minutosApagado = cicloExtractor.apagado_normal * 60; // Convertir a segundos
-
-                // Actualizar tiempos programados
-                updateExtractorCycleTimes(cicloExtractor.encendido_normal, cicloExtractor.apagado_normal);
-
-                // Encender extractor y empezar cuenta regresiva
-                controlesRef.child('extractor').set(true)
-                    .then(() => {
-                        showNotification('Extractor prendido (modo programado)');
-                        updateExtractorCycleStage(true); // Actualizar la etapa actual
-                        saveExtractorCycleState(true, minutosEncendido); // Guardar estado en Firebase
-                        startExtractorCountdown(minutosEncendido, () => {
-                            // Apagar extractor y empezar cuenta regresiva de apagado
-                            controlesRef.child('extractor').set(false)
-                                .then(() => {
-                                    showNotification('Extractor apagado (modo programado)');
-                                    updateExtractorCycleStage(false); // Actualizar la etapa actual
-                                    saveExtractorCycleState(false, minutosApagado); // Guardar estado en Firebase
-                                    startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
-                                });
-                        });
-                    });
-            }
-        });
-    }
-
-    // Función para detener el ciclo programado del extractor
-    function detenerCicloExtractor() {
-        if (intervaloExtractor) {
-            clearInterval(intervaloExtractor);
-            intervaloExtractor = null;
-        }
-        if (extractorCountdownInterval) {
-            clearInterval(extractorCountdownInterval);
-            document.getElementById('extractor-countdown').textContent = '--';
-        }
-    }
-
-    // Control de Luces
-    document.getElementById('lights-manual-on').addEventListener('click', () => {
-        controlesRef.child('luces').set(true)
-            .then(() => showNotification('Luces prendidas'))
-            .catch((error) => console.error('Error al prender luces:', error));
-    });
-
-    document.getElementById('lights-manual-off').addEventListener('click', () => {
-        controlesRef.child('luces').set(false)
-            .then(() => showNotification('Luces apagadas'))
-            .catch((error) => console.error('Error al apagar luces:', error));
-    });
-
-    // Guardar programa de luces
-    document.getElementById('lights-save-program').addEventListener('click', () => {
-        const onHours = parseInt(document.getElementById('light-on-hours').value);
-        const offHours = parseInt(document.getElementById('light-off-hours').value);
-
-        const cicloLuces = {
-            encendido: onHours,
-            apagado: offHours
+    document.addEventListener('DOMContentLoaded', () => {
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDn4smuABKPgN8DBYI2LAzoKhe3EbEYTQk",
+            authDomain: "sala-cultivo.firebaseapp.com",
+            databaseURL: "https://sala-cultivo-default-rtdb.firebaseio.com",
+            projectId: "sala-cultivo",
+            storageBucket: "sala-cultivo.firebasestorage.app",
+            messagingSenderId: "388469961230",
+            appId: "1:388469961230:web:d16beb9ef00ddf0866c25f",
+            measurementId: "G-72JQD67R0X"
         };
 
-        configRef.child('luces/ciclo').set(cicloLuces)
-            .then(() => {
-                showNotification('Programa de luces guardado');
-                console.log('Ciclo de luces guardado:', cicloLuces);
-                updateLightsCycleTimes(onHours, offHours); // Actualizar tiempos programados
-            })
-            .catch((error) => {
-                console.error('Error al guardar programa de luces:', error);
-                showNotification('Error al guardar programa de luces');
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Referencias a la base de datos
+        const configRef = db.ref('configuracion');
+        const estadoActualRef = db.ref('estado_actual');
+        const sensoresRef = db.ref('estado_actual/sensores');
+        const controlesRef = db.ref('estado_actual/controles');
+
+        // Variables globales
+        let modoProgramadoActivo = false;
+        let intervaloLuces;
+        let modoProgramadoExtractorActivo = false;
+        let intervaloExtractor;
+
+        // Variables para la cuenta regresiva
+        let lightsCountdownInterval;
+        let extractorCountdownInterval;
+
+        // Función para formatear el tiempo en minutos y segundos
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Función para iniciar la cuenta regresiva de las luces
+        function startLightsCountdown(duration, callback) {
+            const countdownElement = document.getElementById('lights-countdown');
+            if (!countdownElement) {
+                console.error('Elemento con ID "lights-countdown" no encontrado.');
+                return;
+            }
+
+            let timeRemaining = duration;
+            countdownElement.textContent = formatTime(timeRemaining);
+
+            lightsCountdownInterval = setInterval(() => {
+                timeRemaining--;
+                countdownElement.textContent = formatTime(timeRemaining);
+
+                if (timeRemaining <= 0) {
+                    clearInterval(lightsCountdownInterval);
+                    if (callback) callback();
+                }
+            }, 1000);
+        }
+
+        // Función para iniciar la cuenta regresiva del extractor
+        function startExtractorCountdown(duration, callback) {
+            const countdownElement = document.getElementById('extractor-countdown');
+            if (!countdownElement) {
+                console.error('Elemento con ID "extractor-countdown" no encontrado.');
+                return;
+            }
+
+            let timeRemaining = duration;
+            countdownElement.textContent = formatTime(timeRemaining);
+
+            extractorCountdownInterval = setInterval(() => {
+                timeRemaining--;
+                countdownElement.textContent = formatTime(timeRemaining);
+
+                if (timeRemaining <= 0) {
+                    clearInterval(extractorCountdownInterval);
+                    if (callback) callback();
+                }
+            }, 1000);
+        }
+
+        // Actualizar tiempos programados de las luces
+        function updateLightsCycleTimes(onHours, offHours) {
+            const onTimeElement = document.getElementById('lights-on-time');
+            const offTimeElement = document.getElementById('lights-off-time');
+
+            if (onTimeElement && offTimeElement) {
+                onTimeElement.textContent = `${onHours} horas`;
+                offTimeElement.textContent = `${offHours} horas`;
+            } else {
+                console.error('Elementos con IDs "lights-on-time" o "lights-off-time" no encontrados.');
+            }
+        }
+
+        // Actualizar tiempos programados del extractor
+        function updateExtractorCycleTimes(onMinutes, offMinutes) {
+            const onTimeElement = document.getElementById('extractor-on-time');
+            const offTimeElement = document.getElementById('extractor-off-time');
+
+            if (onTimeElement && offTimeElement) {
+                onTimeElement.textContent = `${onMinutes} minutos`;
+                offTimeElement.textContent = `${offMinutes} minutos`;
+            } else {
+                console.error('Elementos con IDs "extractor-on-time" o "extractor-off-time" no encontrados.');
+            }
+        }
+
+        // Actualizar la etapa actual del ciclo de luces
+        function updateLightsCycleStage(isOn) {
+            const stageElement = document.getElementById('lights-stage');
+            if (stageElement) {
+                stageElement.textContent = isOn ? 'Encendido' : 'Apagado';
+            } else {
+                console.error('Elemento con ID "lights-stage" no encontrado.');
+            }
+        }
+
+        // Actualizar la etapa actual del ciclo del extractor
+        function updateExtractorCycleStage(isOn) {
+            const stageElement = document.getElementById('extractor-stage');
+            if (stageElement) {
+                stageElement.textContent = isOn ? 'Encendido' : 'Apagado';
+            } else {
+                console.error('Elemento con ID "extractor-stage" no encontrado.');
+            }
+        }
+
+        // Guardar el estado del ciclo de luces en Firebase
+        function saveLightsCycleState(isOn, timeRemaining) {
+            configRef.child('luces/estado').set({
+                encendido: isOn,
+                tiempo_restante: timeRemaining
             });
-    });
+        }
 
-    // Activar/Desactivar Modo Programado de Luces
-    document.getElementById('lights-program-mode').addEventListener('click', () => {
-        modoProgramadoActivo = !modoProgramadoActivo;
+        // Guardar el estado del ciclo del extractor en Firebase
+        function saveExtractorCycleState(isOn, timeRemaining) {
+            configRef.child('extractor/estado').set({
+                encendido: isOn,
+                tiempo_restante: timeRemaining
+            });
+        }
 
-        configRef.child('luces/modo_programado').set(modoProgramadoActivo)
-            .then(() => {
-                showNotification(modoProgramadoActivo ? 'Modo programado activado' : 'Modo programado desactivado');
-                document.getElementById('lights-program-mode').textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+        // Recuperar el estado del ciclo de luces al cargar la página
+        configRef.child('luces/estado').on('value', (snapshot) => {
+            const estadoLuces = snapshot.val();
+            if (estadoLuces && modoProgramadoActivo) {
+                const tiempoRestante = estadoLuces.tiempo_restante || 0;
+                const isOn = estadoLuces.encendido || false;
 
-                if (modoProgramadoActivo) {
-                    iniciarCicloLuces();
+                updateLightsCycleStage(isOn); // Actualizar la etapa actual
+
+                if (isOn) {
+                    // Si las luces están encendidas, iniciar cuenta regresiva de encendido
+                    startLightsCountdown(tiempoRestante, () => {
+                        // Apagar luces y empezar cuenta regresiva de apagado
+                        controlesRef.child('luces').set(false)
+                            .then(() => {
+                                showNotification('Luces apagadas (modo programado)');
+                                updateLightsCycleStage(false); // Actualizar la etapa actual
+                                const horasApagado = cicloLuces.apagado * 3600; // Convertir a segundos
+                                saveLightsCycleState(false, horasApagado); // Guardar estado en Firebase
+                                startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
+                            });
+                    });
                 } else {
-                    detenerCicloLuces();
+                    // Si las luces están apagadas, iniciar cuenta regresiva de apagado
+                    startLightsCountdown(tiempoRestante, iniciarCicloLuces);
                 }
-            })
-            .catch((error) => console.error('Error al cambiar el modo programado:', error));
-    });
+            }
+        });
 
-    // Control de Humidificador
-    document.getElementById('humidifier-manual-on').addEventListener('click', () => {
-        controlesRef.child('humidificador').set(true)
-            .then(() => showNotification('Humidificador prendido'))
-            .catch((error) => console.error('Error al prender humidificador:', error));
-    });
+        // Recuperar el estado del ciclo del extractor al cargar la página
+        configRef.child('extractor/estado').on('value', (snapshot) => {
+            const estadoExtractor = snapshot.val();
+            if (estadoExtractor && modoProgramadoExtractorActivo) {
+                const tiempoRestante = estadoExtractor.tiempo_restante || 0;
+                const isOn = estadoExtractor.encendido || false;
 
-    document.getElementById('humidifier-manual-off').addEventListener('click', () => {
-        controlesRef.child('humidificador').set(false)
-            .then(() => showNotification('Humidificador apagado'))
-            .catch((error) => console.error('Error al apagar humidificador:', error));
-    });
+                updateExtractorCycleStage(isOn); // Actualizar la etapa actual
 
-    // Guardar programa de humidificador
-    document.getElementById('humidifier-save-program').addEventListener('click', () => {
-        const dpvMin = parseFloat(document.getElementById('dpv-min').value);
-        const dpvMax = parseFloat(document.getElementById('dpv-max').value);
-
-        configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
-            .then(() => showNotification('Programa de humidificador guardado'))
-            .catch((error) => console.error('Error al guardar programa de humidificador:', error));
-    });
-
-    // Control de Extractor
-    document.getElementById('extractor-manual-on').addEventListener('click', () => {
-        controlesRef.child('extractor').set(true)
-            .then(() => showNotification('Extractor prendido'))
-            .catch((error) => console.error('Error al prender extractor:', error));
-    });
-
-    document.getElementById('extractor-manual-off').addEventListener('click', () => {
-        controlesRef.child('extractor').set(false)
-            .then(() => showNotification('Extractor apagado'))
-            .catch((error) => console.error('Error al apagar extractor:', error));
-    });
-
-    // Guardar programa de extractor
-    document.getElementById('extractor-save-program').addEventListener('click', () => {
-        const interval = parseInt(document.getElementById('extractor-interval').value);
-        const duration = parseInt(document.getElementById('extractor-duration').value);
-
-        configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
-            .then(() => {
-                showNotification('Programa de extractor guardado');
-                updateExtractorCycleTimes(duration, interval); // Actualizar tiempos programados
-            })
-            .catch((error) => console.error('Error al guardar programa de extractor:', error));
-    });
-
-    // Activar/Desactivar Modo Programado del Extractor
-    document.getElementById('extractor-program-mode').addEventListener('click', () => {
-        modoProgramadoExtractorActivo = !modoProgramadoExtractorActivo;
-
-        configRef.child('extractor/modo_programado').set(modoProgramadoExtractorActivo)
-            .then(() => {
-                showNotification(modoProgramadoExtractorActivo ? 'Modo programado del extractor activado' : 'Modo programado del extractor desactivado');
-                document.getElementById('extractor-program-mode').textContent = modoProgramadoExtractorActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
-
-                if (modoProgramadoExtractorActivo) {
-                    iniciarCicloExtractor();
+                if (isOn) {
+                    // Si el extractor está encendido, iniciar cuenta regresiva de encendido
+                    startExtractorCountdown(tiempoRestante, () => {
+                        // Apagar extractor y empezar cuenta regresiva de apagado
+                        controlesRef.child('extractor').set(false)
+                            .then(() => {
+                                showNotification('Extractor apagado (modo programado)');
+                                updateExtractorCycleStage(false); // Actualizar la etapa actual
+                                const minutosApagado = cicloExtractor.apagado_normal * 60; // Convertir a segundos
+                                saveExtractorCycleState(false, minutosApagado); // Guardar estado en Firebase
+                                startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
+                            });
+                    });
                 } else {
-                    detenerCicloExtractor();
+                    // Si el extractor está apagado, iniciar cuenta regresiva de apagado
+                    startExtractorCountdown(tiempoRestante, iniciarCicloExtractor);
                 }
-            })
-            .catch((error) => console.error('Error al cambiar el modo programado del extractor:', error));
+            }
+        });
+
+        // Actualizar datos en tiempo real
+        sensoresRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const temperatureSpan = document.getElementById('temperature--span');
+                const humiditySpan = document.getElementById('humidity--span');
+                const dpvSpan = document.getElementById('dpv--span');
+                const soilMoistureSpan = document.getElementById('soil-moisture--span');
+
+                if (temperatureSpan) temperatureSpan.textContent = data.temperatura || '--';
+                if (humiditySpan) humiditySpan.textContent = data.humedad_ambiente || '--';
+                if (dpvSpan) dpvSpan.textContent = data.deficit_presion_vapor || '--';
+                if (soilMoistureSpan) soilMoistureSpan.textContent = data.humedad_suelo || '--';
+            }
+        });
+
+        controlesRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const lightsStatus = document.getElementById('lights-status');
+                const humidifierStatus = document.getElementById('humidifier-status');
+                const extractorStatus = document.getElementById('extractor-status');
+                const wateringStatus = document.getElementById('watering-status');
+
+                if (lightsStatus) lightsStatus.textContent = data.luces ? 'Prendidas' : 'Apagadas';
+                if (humidifierStatus) humidifierStatus.textContent = data.humidificador ? 'Prendido' : 'Apagado';
+                if (extractorStatus) extractorStatus.textContent = data.extractor ? 'Prendido' : 'Apagado';
+                if (wateringStatus) wateringStatus.textContent = data.bomba_riego ? 'Prendido' : 'Apagado';
+            }
+        });
+
+        // Verificar el estado del modo programado de las luces al cargar la página
+        configRef.child('luces/modo_programado').on('value', (snapshot) => {
+            modoProgramadoActivo = snapshot.val() || false;
+            const lightsProgramModeButton = document.getElementById('lights-program-mode');
+            if (lightsProgramModeButton) {
+                lightsProgramModeButton.textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+            }
+
+            // Si el modo programado está activo, iniciar el ciclo de luces
+            if (modoProgramadoActivo) {
+                iniciarCicloLuces();
+            } else {
+                detenerCicloLuces();
+            }
+        });
+
+        // Función para iniciar el ciclo de luces programado
+        function iniciarCicloLuces() {
+            configRef.child('luces/ciclo').once('value', (snapshot) => {
+                const cicloLuces = snapshot.val();
+                if (cicloLuces && cicloLuces.encendido && cicloLuces.apagado) {
+                    const horasEncendido = cicloLuces.encendido * 3600; // Convertir a segundos
+                    const horasApagado = cicloLuces.apagado * 3600; // Convertir a segundos
+
+                    // Actualizar tiempos programados
+                    updateLightsCycleTimes(cicloLuces.encendido, cicloLuces.apagado);
+
+                    // Encender luces y empezar cuenta regresiva
+                    controlesRef.child('luces').set(true)
+                        .then(() => {
+                            showNotification('Luces prendidas (modo programado)');
+                            updateLightsCycleStage(true); // Actualizar la etapa actual
+                            saveLightsCycleState(true, horasEncendido); // Guardar estado en Firebase
+                            startLightsCountdown(horasEncendido, () => {
+                                // Apagar luces y empezar cuenta regresiva de apagado
+                                controlesRef.child('luces').set(false)
+                                    .then(() => {
+                                        showNotification('Luces apagadas (modo programado)');
+                                        updateLightsCycleStage(false); // Actualizar la etapa actual
+                                        saveLightsCycleState(false, horasApagado); // Guardar estado en Firebase
+                                        startLightsCountdown(horasApagado, iniciarCicloLuces); // Reiniciar ciclo
+                                    });
+                            });
+                        });
+                }
+            });
+        }
+
+        // Función para detener el ciclo de luces programado
+        function detenerCicloLuces() {
+            if (intervaloLuces) {
+                clearInterval(intervaloLuces);
+                intervaloLuces = null;
+            }
+            if (lightsCountdownInterval) {
+                clearInterval(lightsCountdownInterval);
+                const countdownElement = document.getElementById('lights-countdown');
+                if (countdownElement) countdownElement.textContent = '--';
+            }
+        }
+
+        // Verificar el estado del modo programado del extractor al cargar la página
+        configRef.child('extractor/modo_programado').on('value', (snapshot) => {
+            modoProgramadoExtractorActivo = snapshot.val() || false;
+            const extractorProgramModeButton = document.getElementById('extractor-program-mode');
+            if (extractorProgramModeButton) {
+                extractorProgramModeButton.textContent = modoProgramadoExtractorActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+            }
+
+            // Si el modo programado está activo, iniciar el ciclo del extractor
+            if (modoProgramadoExtractorActivo) {
+                iniciarCicloExtractor();
+            } else {
+                detenerCicloExtractor();
+            }
+        });
+
+        // Función para iniciar el ciclo programado del extractor
+        function iniciarCicloExtractor() {
+            configRef.child('extractor/ciclo').once('value', (snapshot) => {
+                const cicloExtractor = snapshot.val();
+                if (cicloExtractor && cicloExtractor.encendido_normal && cicloExtractor.apagado_normal) {
+                    const minutosEncendido = cicloExtractor.encendido_normal * 60; // Convertir a segundos
+                    const minutosApagado = cicloExtractor.apagado_normal * 60; // Convertir a segundos
+
+                    // Actualizar tiempos programados
+                    updateExtractorCycleTimes(cicloExtractor.encendido_normal, cicloExtractor.apagado_normal);
+
+                    // Encender extractor y empezar cuenta regresiva
+                    controlesRef.child('extractor').set(true)
+                        .then(() => {
+                            showNotification('Extractor prendido (modo programado)');
+                            updateExtractorCycleStage(true); // Actualizar la etapa actual
+                            saveExtractorCycleState(true, minutosEncendido); // Guardar estado en Firebase
+                            startExtractorCountdown(minutosEncendido, () => {
+                                // Apagar extractor y empezar cuenta regresiva de apagado
+                                controlesRef.child('extractor').set(false)
+                                    .then(() => {
+                                        showNotification('Extractor apagado (modo programado)');
+                                        updateExtractorCycleStage(false); // Actualizar la etapa actual
+                                        saveExtractorCycleState(false, minutosApagado); // Guardar estado en Firebase
+                                        startExtractorCountdown(minutosApagado, iniciarCicloExtractor); // Reiniciar ciclo
+                                    });
+                            });
+                        });
+                }
+            });
+        }
+
+        // Función para detener el ciclo programado del extractor
+        function detenerCicloExtractor() {
+            if (intervaloExtractor) {
+                clearInterval(intervaloExtractor);
+                intervaloExtractor = null;
+            }
+            if (extractorCountdownInterval) {
+                clearInterval(extractorCountdownInterval);
+                const countdownElement = document.getElementById('extractor-countdown');
+                if (countdownElement) countdownElement.textContent = '--';
+            }
+        }
+
+        // Control de Luces
+        const lightsManualOnButton = document.getElementById('lights-manual-on');
+        if (lightsManualOnButton) {
+            lightsManualOnButton.addEventListener('click', () => {
+                controlesRef.child('luces').set(true)
+                    .then(() => showNotification('Luces prendidas'))
+                    .catch((error) => console.error('Error al prender luces:', error));
+            });
+        }
+
+        const lightsManualOffButton = document.getElementById('lights-manual-off');
+        if (lightsManualOffButton) {
+            lightsManualOffButton.addEventListener('click', () => {
+                controlesRef.child('luces').set(false)
+                    .then(() => showNotification('Luces apagadas'))
+                    .catch((error) => console.error('Error al apagar luces:', error));
+            });
+        }
+
+        // Guardar programa de luces
+        const lightsSaveProgramButton = document.getElementById('lights-save-program');
+        if (lightsSaveProgramButton) {
+            lightsSaveProgramButton.addEventListener('click', () => {
+                const onHours = parseInt(document.getElementById('light-on-hours').value);
+                const offHours = parseInt(document.getElementById('light-off-hours').value);
+
+                const cicloLuces = {
+                    encendido: onHours,
+                    apagado: offHours
+                };
+
+                configRef.child('luces/ciclo').set(cicloLuces)
+                    .then(() => {
+                        showNotification('Programa de luces guardado');
+                        console.log('Ciclo de luces guardado:', cicloLuces);
+                        updateLightsCycleTimes(onHours, offHours); // Actualizar tiempos programados
+                    })
+                    .catch((error) => {
+                        console.error('Error al guardar programa de luces:', error);
+                        showNotification('Error al guardar programa de luces');
+                    });
+            });
+        }
+
+        // Activar/Desactivar Modo Programado de Luces
+        const lightsProgramModeButton = document.getElementById('lights-program-mode');
+        if (lightsProgramModeButton) {
+            lightsProgramModeButton.addEventListener('click', () => {
+                modoProgramadoActivo = !modoProgramadoActivo;
+
+                configRef.child('luces/modo_programado').set(modoProgramadoActivo)
+                    .then(() => {
+                        showNotification(modoProgramadoActivo ? 'Modo programado activado' : 'Modo programado desactivado');
+                        lightsProgramModeButton.textContent = modoProgramadoActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+
+                        if (modoProgramadoActivo) {
+                            iniciarCicloLuces();
+                        } else {
+                            detenerCicloLuces();
+                        }
+                    })
+                    .catch((error) => console.error('Error al cambiar el modo programado:', error));
+            });
+        }
+
+        // Control de Humidificador
+        const humidifierManualOnButton = document.getElementById('humidifier-manual-on');
+        if (humidifierManualOnButton) {
+            humidifierManualOnButton.addEventListener('click', () => {
+                controlesRef.child('humidificador').set(true)
+                    .then(() => showNotification('Humidificador prendido'))
+                    .catch((error) => console.error('Error al prender humidificador:', error));
+            });
+        }
+
+        const humidifierManualOffButton = document.getElementById('humidifier-manual-off');
+        if (humidifierManualOffButton) {
+            humidifierManualOffButton.addEventListener('click', () => {
+                controlesRef.child('humidificador').set(false)
+                    .then(() => showNotification('Humidificador apagado'))
+                    .catch((error) => console.error('Error al apagar humidificador:', error));
+            });
+        }
+
+        // Guardar programa de humidificador
+        const humidifierSaveProgramButton = document.getElementById('humidifier-save-program');
+        if (humidifierSaveProgramButton) {
+            humidifierSaveProgramButton.addEventListener('click', () => {
+                const dpvMin = parseFloat(document.getElementById('dpv-min').value);
+                const dpvMax = parseFloat(document.getElementById('dpv-max').value);
+
+                configRef.child('humidificador').update({ dpv_min: dpvMin, dpv_max: dpvMax })
+                    .then(() => showNotification('Programa de humidificador guardado'))
+                    .catch((error) => console.error('Error al guardar programa de humidificador:', error));
+            });
+        }
+
+        // Control de Extractor
+        const extractorManualOnButton = document.getElementById('extractor-manual-on');
+        if (extractorManualOnButton) {
+            extractorManualOnButton.addEventListener('click', () => {
+                controlesRef.child('extractor').set(true)
+                    .then(() => showNotification('Extractor prendido'))
+                    .catch((error) => console.error('Error al prender extractor:', error));
+            });
+        }
+
+        const extractorManualOffButton = document.getElementById('extractor-manual-off');
+        if (extractorManualOffButton) {
+            extractorManualOffButton.addEventListener('click', () => {
+                controlesRef.child('extractor').set(false)
+                    .then(() => showNotification('Extractor apagado'))
+                    .catch((error) => console.error('Error al apagar extractor:', error));
+            });
+        }
+
+        // Guardar programa de extractor
+        const extractorSaveProgramButton = document.getElementById('extractor-save-program');
+        if (extractorSaveProgramButton) {
+            extractorSaveProgramButton.addEventListener('click', () => {
+                const interval = parseInt(document.getElementById('extractor-interval').value);
+                const duration = parseInt(document.getElementById('extractor-duration').value);
+
+                configRef.child('extractor/ciclo').update({ encendido_normal: duration, apagado_normal: interval })
+                    .then(() => {
+                        showNotification('Programa de extractor guardado');
+                        updateExtractorCycleTimes(duration, interval); // Actualizar tiempos programados
+                    })
+                    .catch((error) => console.error('Error al guardar programa de extractor:', error));
+            });
+        }
+
+        // Activar/Desactivar Modo Programado del Extractor
+        const extractorProgramModeButton = document.getElementById('extractor-program-mode');
+        if (extractorProgramModeButton) {
+            extractorProgramModeButton.addEventListener('click', () => {
+                modoProgramadoExtractorActivo = !modoProgramadoExtractorActivo;
+
+                configRef.child('extractor/modo_programado').set(modoProgramadoExtractorActivo)
+                    .then(() => {
+                        showNotification(modoProgramadoExtractorActivo ? 'Modo programado del extractor activado' : 'Modo programado del extractor desactivado');
+                        extractorProgramModeButton.textContent = modoProgramadoExtractorActivo ? 'Desactivar Modo Programado' : 'Activar Modo Programado';
+
+                        if (modoProgramadoExtractorActivo) {
+                            iniciarCicloExtractor();
+                        } else {
+                            detenerCicloExtractor();
+                        }
+                    })
+                    .catch((error) => console.error('Error al cambiar el modo programado del extractor:', error));
+            });
+        }
+
+        // Control de Riego
+        const wateringManualOnButton = document.getElementById('watering-manual-on');
+        if (wateringManualOnButton) {
+            wateringManualOnButton.addEventListener('click', () => {
+                controlesRef.child('bomba_riego').set(true)
+                    .then(() => showNotification('Riego prendido'))
+                    .catch((error) => console.error('Error al prender riego:', error));
+            });
+        }
+
+        const wateringManualOffButton = document.getElementById('watering-manual-off');
+        if (wateringManualOffButton) {
+            wateringManualOffButton.addEventListener('click', () => {
+                controlesRef.child('bomba_riego').set(false)
+                    .then(() => showNotification('Riego apagado'))
+                    .catch((error) => console.error('Error al apagar riego:', error));
+            });
+        }
+
+        // Guardar programa de riego
+        const wateringSaveProgramButton = document.getElementById('watering-save-program');
+        if (wateringSaveProgramButton) {
+            wateringSaveProgramButton.addEventListener('click', () => {
+                const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
+                const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
+                const wateringDuration = parseInt(document.getElementById('watering-duration').value);
+
+                configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
+                    .then(() => showNotification('Programa de riego guardado'))
+                    .catch((error) => console.error('Error al guardar programa de riego:', error));
+            });
+        }
+
+        // Función para mostrar notificaciones
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.style.display = 'block';
+                setTimeout(() => notification.style.display = 'none', 3000);
+            } else {
+                console.error('Elemento con ID "notification" no encontrado.');
+            }
+        }
     });
-
-    // Control de Riego
-    document.getElementById('watering-manual-on').addEventListener('click', () => {
-        controlesRef.child('bomba_riego').set(true)
-            .then(() => showNotification('Riego prendido'))
-            .catch((error) => console.error('Error al prender riego:', error));
-    });
-
-    document.getElementById('watering-manual-off').addEventListener('click', () => {
-        controlesRef.child('bomba_riego').set(false)
-            .then(() => showNotification('Riego apagado'))
-            .catch((error) => console.error('Error al apagar riego:', error));
-    });
-
-    // Guardar programa de riego
-    document.getElementById('watering-save-program').addEventListener('click', () => {
-        const soilMoistureMin = parseInt(document.getElementById('soil-moisture-min').value);
-        const soilMoistureMax = parseInt(document.getElementById('soil-moisture-max').value);
-        const wateringDuration = parseInt(document.getElementById('watering-duration').value);
-
-        configRef.child('riego').update({ humedad_minima: soilMoistureMin, humedad_maxima: soilMoistureMax, tiempo_riego: wateringDuration })
-            .then(() => showNotification('Programa de riego guardado'))
-            .catch((error) => console.error('Error al guardar programa de riego:', error));
-    });
-
-    // Función para mostrar notificaciones
-    function showNotification(message) {
-        const notification = document.getElementById('notification');
-        notification.textContent = message;
-        notification.style.display = 'block';
-        setTimeout(() => notification.style.display = 'none', 3000);
-    }
 </script>
+
 </body>
 </html>
